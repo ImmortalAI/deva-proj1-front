@@ -5,6 +5,7 @@ import { useUserStore } from "@/stores/user";
 declare module "vue-router" {
   interface RouteMeta {
     requiresGuest?: boolean;
+    requiresAuth?: boolean;
   }
 }
 
@@ -32,6 +33,14 @@ const router = createRouter({
         requiresGuest: true,
       },
     },
+    {
+      path: "/create",
+      name: "create",
+      component: () => import("../views/CreateProjectView.vue"),
+      meta: {
+        requiresAuth: true,
+      },
+    },
   ],
 });
 
@@ -39,7 +48,9 @@ router.beforeEach((to) => {
   const user = useUserStore();
   if (to.meta.requiresGuest && user.isAuthenticated) {
     return { name: "home" };
-  } else {
+  } else if (to.meta.requiresAuth && !user.isAuthenticated)
+    return { name: "login" };
+  else {
     return true;
   }
 });
