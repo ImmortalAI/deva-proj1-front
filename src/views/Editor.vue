@@ -1,25 +1,61 @@
+<!--<template>
+  <div class="grid grid-cols-[60%_40%] grid-rows-2 gap-4 p-4">
+    &lt;!&ndash; Ячейка: 1-я строка, 1-й столбец &ndash;&gt;
+    <div class="space-y-4">
+    </div>
+
+    &lt;!&ndash; Ячейка: 1-я строка, 2-й столбец &ndash;&gt;
+    <div class="flex flex-col space-y-2">
+      <div class="border p-2">Text Element 1</div>
+      <div class="border p-2">Text Element 2</div>
+      <div class="border p-2">Text Element 3</div>
+      <div class="border p-2">Text Element 4</div>
+      <div class="border p-2">Text Element 5</div>
+    </div>
+
+    &lt;!&ndash; Ячейка: 2-я строка, 1-й столбец &ndash;&gt;
+    <div class="flex items-center">
+      <Slider
+          v-model="timelineValue"
+          :min="0"
+          :max="videoDuration"
+          @change="onSliderChange"
+          class="w-full"
+      />
+    </div>
+
+    &lt;!&ndash; Ячейка: 2-я строка, 2-й столбец (оставлена пустой) &ndash;&gt;
+    <div></div>
+  </div>
+</template>-->
+
+
 <template>
-  <div class="container">
+  <div class="container p-4">
     <!-- Left section (60%) -->
     <div class="left-section">
-      <!-- Picture block with minimal size -->
-      <div class="image-block">
-        <img
-            :src="currentImage"
-            alt="Display image"
-            class="image-content"
-        />
+      <div v-if="videoShown"><!-- fixme -->
+        <div class="videoView">
+          <video ref="videoElement"></video>
+        </div>
+        <!-- Timeline slider -->
+        <div class="timeline-container">
+          <Slider
+              v-model="timelineValue"
+              :min="0"
+              :max="100"
+              class="timeline-slider"
+          />
+        </div>
       </div>
-
-      <!-- Timeline slider -->
-      <div class="timeline-container">
-        <Slider
-            v-model="timelineValue"
-            :min="0"
-            :max="100"
-            class="timeline-slider"
-        />
-      </div>
+      <!-- FileUpload из PrimeVue -->
+      <FileUpload v-else
+                  mode="basic"
+                  accept="video/*"
+                  :customUpload="true"
+                  chooseLabel="Upload Video"
+                  @select="onFileSelect"
+      />
     </div>
 
     <!-- Right section (40%) -->
@@ -43,8 +79,49 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue';
+import {ref, watch, onMounted} from 'vue';
+import FileUpload from 'primevue/fileupload';
 import Slider from 'primevue/slider';
+
+// Состояния для синхронизации времени видео и его длительности
+const videoDuration = ref(0);
+const videoElement = ref<HTMLVideoElement | null>(null);
+const videoShown = ref(false)
+
+// Обработчик выбора файла в FileUpload
+function onFileSelect(event: any) {
+  console.log("video selected")
+  const file = event.files[0];
+  const fileUrl = URL.createObjectURL(file);
+  videoShown.value = true //fixme
+  if (videoElement.value) {
+    videoElement.value.src = fileUrl;
+    videoElement.value.onloadedmetadata = () => {
+      // Устанавливаем длительность видео для ограничения ползунка
+      videoDuration.value = videoElement.value!.duration;
+    };
+    videoElement.value.load();
+    // Для синхронизации времени обновляем значение с помощью события timeupdate
+    videoElement.value.play();
+  }
+}
+
+// Обновление видео при перетаскивании ползунка
+function onSliderChange(newValue: number) {
+  if (videoElement.value) {
+    videoElement.value.currentTime = newValue;
+  }
+}
+
+// Обновляем videoCurrentTime при проигрывании видео
+onMounted(() => {
+  if (videoElement.value) {
+    timelineValue.value = timeToValue(contentItems.value[0].time);
+    videoElement.value.addEventListener('timeupdate', () => {
+      timelineValue.value = videoElement.value!.currentTime;
+    });
+  }
+});
 
 // Sample data
 interface ContentItem {
@@ -55,13 +132,13 @@ interface ContentItem {
 }
 
 const contentItems = ref<ContentItem[]>([
-  { title: 'Event 1', description: 'Description for event 1', time: '00:10', image: 'image1.jpg' },
-  { title: 'Event 2', description: 'Description for event 2', time: '00:30', image: 'image2.jpg' },
-  { title: 'Event 3', description: 'Description for event 3', time: '01:15', image: 'image3.jpg' },
-  { title: 'Event 4', description: 'Description for event 4', time: '02:00', image: 'image4.jpg' },
-  { title: 'Event 5', description: 'Description for event 5', time: '03:45', image: 'image5.jpg' },
-  { title: 'Event 6', description: 'Description for event 6', time: '05:20', image: 'image6.jpg' },
-  { title: 'Event 7', description: 'Description for event 7', time: '07:30', image: 'image7.jpg' },
+  {title: 'Event 1', description: 'Description for event 1', time: '00:10', image: 'image1.jpg'},
+  {title: 'Event 2', description: 'Description for event 2', time: '00:30', image: 'image2.jpg'},
+  {title: 'Event 3', description: 'Description for event 3', time: '01:15', image: 'image3.jpg'},
+  {title: 'Event 4', description: 'Description for event 4', time: '02:00', image: 'image4.jpg'},
+  {title: 'Event 5', description: 'Description for event 5', time: '03:45', image: 'image5.jpg'},
+  {title: 'Event 6', description: 'Description for event 6', time: '05:20', image: 'image6.jpg'},
+  {title: 'Event 7', description: 'Description for event 7', time: '07:30', image: 'image7.jpg'},
 ]);
 
 const timelineValue = ref(0);
@@ -113,7 +190,6 @@ const scrollToActiveItem = () => {
 
 // Initialize with first item active
 onMounted(() => {
-  timelineValue.value = timeToValue(contentItems.value[0].time);
 });
 </script>
 
@@ -192,5 +268,9 @@ onMounted(() => {
   font-size: 0.8em;
   color: #666;
   margin-top: 5px;
+}
+
+.videoView {
+  min-height: max-content;
 }
 </style>
