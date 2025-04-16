@@ -8,13 +8,13 @@ interface FileData {
   imageUrl?: string;
 }
 
-const availableFiles = ref<FileData[]>([{name: "Новый проект", id: 0}]);
+const availableFiles = ref<FileData[]>([{name: "Новый проект", id: 0}, {name: "AbobaProj1", id: 1}, {name: "AbobaProj2", id: 2}]);
 </script>
 
 <template>
   <main class="ml-[10%] mr-[10%] mt-8">
     <div v-for="availableFile in availableFiles">
-      <FileElement :idFile="availableFile.id.toString()" :imgFile="availableFile.imageUrl" :nameFile="availableFile.name" />
+      <FileElement class="mb-4" :idFile="availableFile.id.toString()" :imgFile="availableFile.imageUrl" :nameFile="availableFile.name" />
     </div>
   </main>
 </template>
