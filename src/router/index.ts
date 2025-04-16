@@ -41,6 +41,14 @@ const router = createRouter({
         requiresAuth: true,
       },
     },
+    {
+      path: "/edit/:id",
+      name: "edit",
+      component: () => import("../views/Editor.vue"),
+      meta: {
+        requiresAuth: true,
+      },
+    },
   ],
 });
 
