@@ -2,6 +2,7 @@
 import {useUserStore} from '@/stores/user';
 import {reactive, ref} from 'vue';
 import {RouterLink} from 'vue-router'
+import { FloatLabel, InputGroup, InputGroupAddon, InputText, Button } from 'primevue';
 
 const userStore = useUserStore();
 const username = ref();
@@ -33,36 +34,54 @@ async function register() {
   }
 }
 </script>
+
 <template>
   <div class="flex items-center justify-center min-h-screen">
-    <div class="p-6 rounded-xl shadow-md w-full max-w-sm border">
-      <form class="space-y-4 content-center">
-        <div>
-          <label for="password" class="flex justify-center py-2 rounded-lg text-2xl">Регистрация</label>
-        </div>
-        <!--fixme placeholders-->
-        <div>
-          <label for="username" class="block text-sm font-medium">Имя пользователя:</label>
-          <input v-model="username" name="username" type="text" placeholder="Username" autocomplete="username"
-                 class="w-full mt-1 px-4 py-2 border rounded-lg focus:ring-2" required/>
-        </div>
-        <div>
-          <label for="password" class="block text-sm text-size-sm">Пароль:</label>
-          <input autocomplete="current-password" v-model="password" name="password" type="password"
-                 placeholder="Password" class="w-full mt-1 px-4 py-2 border rounded-lg focus:ring-2" required/>
-        </div>
-        <div>
-          <label for="repeat-password" class="block text-sm text-size-sm">Пароль:</label>
-          <input autocomplete="current-password" v-model="repeatPassword" name="repeat-password" type="password"
-                 placeholder="Repeat Password" class="w-full mt-1 px-4 py-2 border rounded-lg focus:ring-2" required/>
-        </div>
+    <div class="p-6 rounded-xl w-full max-w-sm border">
+      <form class="space-y-4 flex flex-col items-center">
+          <p class="text-2xl">Регистрация</p>
+
+        <InputGroup>
+          <InputGroupAddon>
+            <i class="pi pi-user" />
+          </InputGroupAddon>
+          <FloatLabel variant="on">
+            <InputText id="username" v-model="username" type="text" autocomplete="username" name="username" required
+              class="w-full" />
+
+            <label for="username" class="text-sm font-medium">Имя пользователя</label>
+          </FloatLabel>
+        </InputGroup>
+
+        <InputGroup>
+          <InputGroupAddon>
+            <i class="pi pi-lock" />
+          </InputGroupAddon>
+          <FloatLabel variant="on">
+            <InputText id="password" v-model="password" type="password" autocomplete="current-password" name="password"
+              required class="w-full" />
+
+            <label for="password" class="text-sm">Пароль</label>
+          </FloatLabel>
+        </InputGroup>
+
+        <InputGroup>
+          <InputGroupAddon>
+            <i class="pi pi-lock" />
+          </InputGroupAddon>
+          <FloatLabel variant="on">
+            <InputText v-model="password" type="password" autocomplete="current-password" name="repeat-password"
+              required class="w-full" />
+
+            <label for="repeat-password" class="text-sm">Повторите пароль</label>
+          </FloatLabel>
+        </InputGroup>
+
         <div class="w-full pt-5">
-          <button @click.prevent="register" type="submit"
-                  class="w-full py-2 rounded-lg border hover:bg-violet-800 hover:translate-y-0.5">
-            Зарегистрироваться
-          </button>
+          <Button type="submit" @click.prevent="register"
+            class="w-full !bg-violet-600 hover:!bg-violet-800 hover:!translate-y-0.5 !border-violet-800" label="Войти" />
         </div>
-        <p v-if="failed.isFailed" class="w-full py-2 rounded-lg">{{ failed.msg }}</p>
+        <p v-if="failed.isFailed" class="py-2 rounded-lg text-red-600">Неверный логин или пароль</p>
         <div class="flex justify-center py-2 rounded-lg">
           Уже есть аккаунт?
           <RouterLink to="/login" class="hover:text-violet-800 pl-2">
