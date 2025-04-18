@@ -3,6 +3,8 @@ import { useUserStore } from '@/stores/user';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { FloatLabel, InputGroup, InputGroupAddon, InputText, Button } from 'primevue';
+import type { LoginUserRequest } from '@/models/userScheme';
+import fetchUserData from '@/utils/fetchUserData';
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -11,26 +13,28 @@ const password = ref();
 const isFailed = ref(false);
 
 async function login() {
-  // const response = await fetch("/api/login", {
-  //     method: 'POST',
-  //     headers: {
-  //         'Content-Type': 'application/json'
-  //     },
-  //     body: JSON.stringify({ username: username.value, password: password.value })
-  // });
+  const request: LoginUserRequest = {
+    login: username.value,
+    password: password.value
+  }
 
-  // if(response.ok){
-  //     const data = await response.json();
-  //     userStore.username = data?.username;
-  // }
-  // else{
-  //     isFailed.value = true;
-  //     password.value = '';
-  // }
+  const response = await fetch("/api/auth/login", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(request)
+  });
 
-  // For debugging purposes
-  userStore.username = username.value;
-  await router.push("/")
+  if (response.ok) {
+    const data = await response.json();
+    await fetchUserData();
+    await router.push("/")
+  }
+  else {
+    isFailed.value = true;
+    password.value = '';
+  }
 }
 </script>
 
@@ -38,7 +42,7 @@ async function login() {
   <div class="flex items-center justify-center min-h-screen">
     <div class="p-6 rounded-xl w-full max-w-sm border">
       <form class="space-y-4 flex flex-col items-center">
-          <p class="text-2xl">Вход</p>
+        <p class="text-2xl">Вход</p>
 
         <InputGroup>
           <InputGroupAddon>
@@ -66,7 +70,8 @@ async function login() {
 
         <div class="w-full pt-5">
           <Button type="submit" @click.prevent="login"
-            class="w-full !bg-violet-600 hover:!bg-violet-800 hover:!translate-y-0.5 !border-violet-800" label="Войти" />
+            class="w-full !bg-violet-600 hover:!bg-violet-800 hover:!translate-y-0.5 !border-violet-800"
+            label="Войти" />
         </div>
         <p v-if="isFailed" class="py-2 rounded-lg text-red-600">Неверный логин или пароль</p>
         <div class="flex justify-center py-2 rounded-lg">

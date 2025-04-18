@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import {useUserStore} from '@/stores/user';
 import {reactive, ref} from 'vue';
-import {RouterLink} from 'vue-router'
+import {RouterLink, useRouter} from 'vue-router'
 import { FloatLabel, InputGroup, InputGroupAddon, InputText, Button } from 'primevue';
+import type { RegisterUserRequest } from '@/models/userScheme';
+import type { ErrorResponse } from '@/models/errorScheme';
 
+const router = useRouter();
 const userStore = useUserStore();
 const username = ref();
 const password = ref();
@@ -17,20 +20,26 @@ async function register() {
     return;
   }
 
-  const response = await fetch("/api/register", {
+  const request: RegisterUserRequest = {
+    login: username.value,
+    password: password.value,
+    password_repeat: repeatPassword.value,
+  }
+
+  const response = await fetch("/api/auth/register", {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({username: username.value, password: password.value})
+    body: JSON.stringify(request)
   });
 
   if (response.ok) {
-    const data = await response.json();
-    userStore.username = data?.username;
+    await router.push("/login");
   } else {
+    const data = await response.json() as ErrorResponse;
     failed.isFailed = true;
-    failed.msg = "Неверный логин или пароль";
+    failed.msg = data.detail || "Произошла ошибка";
   }
 }
 </script>
@@ -70,7 +79,7 @@ async function register() {
             <i class="pi pi-lock" />
           </InputGroupAddon>
           <FloatLabel variant="on">
-            <InputText v-model="password" type="password" autocomplete="current-password" name="repeat-password"
+            <InputText v-model="repeatPassword" type="password" autocomplete="current-password" name="repeat-password"
               required class="w-full" />
 
             <label for="repeat-password" class="text-sm">Повторите пароль</label>
@@ -79,9 +88,9 @@ async function register() {
 
         <div class="w-full pt-5">
           <Button type="submit" @click.prevent="register"
-            class="w-full !bg-violet-600 hover:!bg-violet-800 hover:!translate-y-0.5 !border-violet-800" label="Войти" />
+            class="w-full !bg-violet-600 hover:!bg-violet-800 hover:!translate-y-0.5 !border-violet-800" label="Зарегистрироваться" />
         </div>
-        <p v-if="failed.isFailed" class="py-2 rounded-lg text-red-600">Неверный логин или пароль</p>
+        <p v-if="failed.isFailed" class="py-2 rounded-lg text-red-600">{{ failed.msg }}</p>
         <div class="flex justify-center py-2 rounded-lg">
           Уже есть аккаунт?
           <RouterLink to="/login" class="hover:text-violet-800 pl-2">

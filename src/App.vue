@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { RouterLink, RouterView, useRouter } from 'vue-router'
 import { useUserStore } from './stores/user';
+import logoutUser from './utils/logoutUser';
 
 const router = useRouter();
 const userStore = useUserStore();
 
 function handleAuth() {
   if (userStore.isAuthenticated) {
-    userStore.username = "";
+    logoutUser();
     router.push('/');
   }
   else {
