@@ -1,276 +1,223 @@
-<!--<template>
-  <div class="grid grid-cols-[60%_40%] grid-rows-2 gap-4 p-4">
-    &lt;!&ndash; Ячейка: 1-я строка, 1-й столбец &ndash;&gt;
-    <div class="space-y-4">
-    </div>
-
-    &lt;!&ndash; Ячейка: 1-я строка, 2-й столбец &ndash;&gt;
-    <div class="flex flex-col space-y-2">
-      <div class="border p-2">Text Element 1</div>
-      <div class="border p-2">Text Element 2</div>
-      <div class="border p-2">Text Element 3</div>
-      <div class="border p-2">Text Element 4</div>
-      <div class="border p-2">Text Element 5</div>
-    </div>
-
-    &lt;!&ndash; Ячейка: 2-я строка, 1-й столбец &ndash;&gt;
-    <div class="flex items-center">
-      <Slider
-          v-model="timelineValue"
-          :min="0"
-          :max="videoDuration"
-          @change="onSliderChange"
-          class="w-full"
-      />
-    </div>
-
-    &lt;!&ndash; Ячейка: 2-я строка, 2-й столбец (оставлена пустой) &ndash;&gt;
-    <div></div>
-  </div>
-</template>-->
-
-
-<template>
-  <div class="container p-4">
-    <!-- Left section (60%) -->
-    <div class="left-section">
-      <div v-if="videoShown"><!-- fixme -->
-        <div class="videoView">
-          <video ref="videoElement"></video>
-        </div>
-        <!-- Timeline slider -->
-        <div class="timeline-container">
-          <Slider
-              v-model="timelineValue"
-              :min="0"
-              :max="100"
-              class="timeline-slider"
-          />
-        </div>
-      </div>
-      <!-- FileUpload из PrimeVue -->
-      <FileUpload v-else
-                  mode="basic"
-                  accept="video/*"
-                  :customUpload="true"
-                  chooseLabel="Upload Video"
-                  @select="onFileSelect"
-      />
-    </div>
-
-    <!-- Right section (40%) -->
-    <div class="right-section">
-      <!-- Scrollable content -->
-      <div class="scrollable-content" ref="scrollContainer">
-        <div
-            v-for="(item, index) in contentItems"
-            :key="index"
-            class="content-box"
-            :class="{ 'active-box': index === activeIndex }"
-            @click="setActive(index)"
-        >
-          <h3>{{ item.title }}</h3>
-          <p>{{ item.description }}</p>
-          <span class="time-marker">{{ item.time }}</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import {ref, watch, onMounted} from 'vue';
-import FileUpload from 'primevue/fileupload';
-import Slider from 'primevue/slider';
+import { ref, watch, onMounted } from "vue";
+import FileUpload, { type FileUploadUploaderEvent } from "primevue/fileupload";
+import Button from "primevue/button";
+import Slider from "primevue/slider";
+import InputGroup from "primevue/inputgroup";
+import InputGroupAddon from "primevue/inputgroupaddon";
+import ProgressBar from "primevue/progressbar";
+import { useRoute } from "vue-router";
+import type { FileInfoResponse } from "@/models/fileScheme";
+import type {
+  TaskCreateRequest,
+  TaskInfoRequest,
+  TaskTypes,
+} from "@/models/taskScheme";
+import { useSSE } from "@/composables/useSSE";
+import TranscriptionList from "@/components/TranscriptionList.vue";
+import { useEditorStore } from "@/stores/editor";
 
-// Состояния для синхронизации времени видео и его длительности
+const route = useRoute();
+const editorStore = useEditorStore();
+
+const isUploaded = ref(false);
+const uploadProgress = ref(0);
+const uploadedVideoUrl = ref<string | null>(null);
+
+const videoId = ref("");
+const taskId = ref("");
+
+const { sseData, sseConnect, sseDisconnect } = useSSE();
+
+const uploadFile = async (event: FileUploadUploaderEvent) => {
+  const file = Array.isArray(event.files) ? event.files[0] : event.files;
+  const formData = new FormData();
+  const projectId = route.params.id;
+
+  if (!file) return;
+
+  formData.append("file", file);
+  formData.append("project_id", projectId.toString());
+  const response = await fetch("/api/file/upload", {
+    method: "POST",
+    body: formData,
+  });
+
+  if (response.ok) {
+    const data = (await response.json()) as FileInfoResponse;
+    videoId.value = data.id;
+    isUploaded.value = true;
+  }
+};
+
+/* //////////////////////
+async function downloadFromUrl(url: string, filename: string): Promise<void> {
+  try {
+    // Fetch the file
+    const response = await fetch(url);
+    
+    // Check if request was successful
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    // Get the blob data
+    const blob = await response.blob();
+    
+    // Create download link
+    const blobUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = blobUrl;
+    a.download = filename;
+    
+    // Trigger download
+    document.body.appendChild(a);
+    a.click();
+    
+    // Clean up
+    window.URL.revokeObjectURL(blobUrl);
+    document.body.removeChild(a);
+  } catch (error) {
+    console.error('Download failed:', error);
+    throw error;
+  }
+}
+
+// Usage
+downloadFromUrl('https://example.com/video.mp4', 'my-video.mp4')
+  .then(() => console.log('Download complete'))
+  .catch(console.error);
+////////////////////// */
+
+interface CommentItem {
+  timestamp: string;
+  content: string;
+}
+
+const commentItems = ref<CommentItem[]>([
+  { timestamp: "00:10", content: "Event 1" },
+  { timestamp: "00:30", content: "Event 2" },
+  { timestamp: "01:15", content: "Event 3" },
+  { timestamp: "02:00", content: "Event 4" },
+  { timestamp: "03:45", content: "Event 5" },
+  { timestamp: "05:20", content: "Event 6" },
+  { timestamp: "07:30", content: "Event 7" },
+]);
+const inEditIndex = ref(-1);
+const inEditContent = ref("");
+
+function setEdit(index: number) {
+  inEditIndex.value = index;
+  inEditContent.value = commentItems.value[index].content;
+}
+
+function saveTranscription() { }
+
 const videoDuration = ref(0);
 const videoElement = ref<HTMLVideoElement | null>(null);
-const videoShown = ref(false)
+const videoShown = ref(false);
 
-// Обработчик выбора файла в FileUpload
 function onFileSelect(event: any) {
-  console.log("video selected")
+  console.log("video selected");
   const file = event.files[0];
   const fileUrl = URL.createObjectURL(file);
-  videoShown.value = true //fixme
+  videoShown.value = true; //fixme
   if (videoElement.value) {
     videoElement.value.src = fileUrl;
     videoElement.value.onloadedmetadata = () => {
-      // Устанавливаем длительность видео для ограничения ползунка
       videoDuration.value = videoElement.value!.duration;
     };
     videoElement.value.load();
-    // Для синхронизации времени обновляем значение с помощью события timeupdate
     videoElement.value.play();
   }
 }
 
-// Обновление видео при перетаскивании ползунка
 function onSliderChange(newValue: number) {
   if (videoElement.value) {
     videoElement.value.currentTime = newValue;
   }
 }
 
-// Обновляем videoCurrentTime при проигрывании видео
 onMounted(() => {
   if (videoElement.value) {
-    timelineValue.value = timeToValue(contentItems.value[0].time);
-    videoElement.value.addEventListener('timeupdate', () => {
+    timelineValue.value = timeToValue(commentItems.value[0].timestamp);
+    videoElement.value.addEventListener("timeupdate", () => {
       timelineValue.value = videoElement.value!.currentTime;
     });
   }
 });
 
-// Sample data
-interface ContentItem {
-  title: string;
-  description: string;
-  time: string;
-  image: string;
-}
-
-const contentItems = ref<ContentItem[]>([
-  {title: 'Event 1', description: 'Description for event 1', time: '00:10', image: 'image1.jpg'},
-  {title: 'Event 2', description: 'Description for event 2', time: '00:30', image: 'image2.jpg'},
-  {title: 'Event 3', description: 'Description for event 3', time: '01:15', image: 'image3.jpg'},
-  {title: 'Event 4', description: 'Description for event 4', time: '02:00', image: 'image4.jpg'},
-  {title: 'Event 5', description: 'Description for event 5', time: '03:45', image: 'image5.jpg'},
-  {title: 'Event 6', description: 'Description for event 6', time: '05:20', image: 'image6.jpg'},
-  {title: 'Event 7', description: 'Description for event 7', time: '07:30', image: 'image7.jpg'},
-]);
-
 const timelineValue = ref(0);
 const activeIndex = ref(0);
-const currentImage = ref(contentItems.value[0].image);
 const scrollContainer = ref<HTMLElement | null>(null);
 
-// Convert time string to slider value (0-100)
 const timeToValue = (time: string) => {
-  const [minutes, seconds] = time.split(':').map(Number);
+  const [minutes, seconds] = time.split(":").map(Number);
   return minutes * 60 + seconds;
 };
 
-// Initialize timeline max value based on last item
-const maxTimeValue = timeToValue(contentItems.value[contentItems.value.length - 1].time);
+const maxTimeValue = timeToValue(
+  commentItems.value[commentItems.value.length - 1].timestamp
+);
 
-// Update active item when slider changes
 watch(timelineValue, (newValue) => {
-  // Find the item closest to the current timeline position
-  for (let i = 0; i < contentItems.value.length; i++) {
-    const itemValue = timeToValue(contentItems.value[i].time);
+  for (let i = 0; i < commentItems.value.length; i++) {
+    const itemValue = timeToValue(commentItems.value[i].timestamp);
     if (itemValue >= newValue) {
       activeIndex.value = i;
-      currentImage.value = contentItems.value[i].image;
       scrollToActiveItem();
       break;
     }
   }
 });
 
-// Set active item and update timeline
 const setActive = (index: number) => {
   activeIndex.value = index;
-  timelineValue.value = timeToValue(contentItems.value[index].time);
-  currentImage.value = contentItems.value[index].image;
+  timelineValue.value = timeToValue(commentItems.value[index].timestamp);
 };
 
-// Scroll to the active item
 const scrollToActiveItem = () => {
   if (scrollContainer.value) {
     const container = scrollContainer.value;
     const activeElement = container.children[activeIndex.value] as HTMLElement;
     container.scrollTo({
       top: activeElement.offsetTop - container.offsetTop - 20,
-      behavior: 'smooth'
+      behavior: "smooth",
     });
   }
 };
-
-// Initialize with first item active
-onMounted(() => {
-});
 </script>
 
-<style scoped>
-.container {
-  display: flex;
-  height: 50vh;
-  width: 100%;
-}
+<template>
+  <div class="w-full grid grid-cols-[60%_40%] grid-rows-2 gap-4 p-4">
+    <div
+      class="relative w-full h-96 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
+      <div v-if="!isUploaded" class="text-center">
+        <FileUpload mode="basic" name="video" :auto="true" :customUpload="true" @uploader="uploadFile" accept="video/*"
+          chooseLabel="" class="w-full">
+          <template #content>
+            <div class="flex flex-col items-center gap-2 p-4">
+              <i class="pi pi-cloud-upload text-4xl text-blue-500" />
+              <span class="text-gray-600">Choose a file or drop it here</span>
+            </div>
+          </template>
+        </FileUpload>
+        <!-- <ProgressBar 
+        v-if="uploadProgress > 0"
+        :value="uploadProgress"
+        class="w-64 absolute bottom-4 left-1/2 transform -translate-x-1/2"
+      /> -->
+      </div>
 
-.left-section {
-  width: 60%;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-}
+      <!-- <video 
+      v-else
+      :src="uploadedVideoUrl"
+      controls
+      class="w-full h-full rounded-lg object-contain bg-black"
+    /> -->
+    </div>
 
-.right-section {
-  width: 40%;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-}
-
-.image-block {
-  min-height: 300px; /* Minimal size */
-  border: 1px solid #ddd;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
-  background-color: #f5f5f5;
-}
-
-.image-content {
-  max-width: 100%;
-  max-height: 100%;
-}
-
-.timeline-container {
-  width: 100%;
-  padding: 20px 0;
-}
-
-.timeline-slider {
-  width: 100%;
-}
-
-.scrollable-content {
-  flex: 1;
-  overflow-y: auto;
-  border: 1px solid #ddd;
-  padding: 10px;
-  height: calc(100vh - 400px); /* Matches timeline height */
-}
-
-.content-box {
-  padding: 15px;
-  margin-bottom: 10px;
-  border: 1px solid #eee;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.content-box:hover {
-  background-color: #f9f9f9;
-}
-
-.active-box {
-  background-color: #f0f7ff;
-}
-
-.time-marker {
-  display: block;
-  font-size: 0.8em;
-  color: #666;
-  margin-top: 5px;
-}
-
-.videoView {
-  min-height: max-content;
-}
-</style>
+    <TranscriptionList :fileId="editorStore.fileId" :setActive="setActive"></TranscriptionList>
+  </div>
+</template>
