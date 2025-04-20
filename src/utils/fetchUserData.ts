@@ -7,10 +7,8 @@ export default async function () {
 
   try {
     const response = await axios.get("/api/auth/user_info");
-    if (response.status === 200) {
-      const data = response.data as User;
-      user.username = data.login;
-    }
+    const data = response.data as User;
+    user.username = data.login;
   } catch (e) {
     console.log(e); // FIXME
   }

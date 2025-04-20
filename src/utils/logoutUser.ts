@@ -6,9 +6,7 @@ export default async function () {
 
   try {
     const response = await axios.post("/api/auth/logout");
-    if (response.status === 200) {
-      store.username = "";
-    }
+    store.username = "";
   } catch (e) {
     console.log(e); // FIXME
   }

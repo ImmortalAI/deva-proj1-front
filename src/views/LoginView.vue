@@ -21,10 +21,8 @@ async function login() {
 
   try {
     const response = await axios.post("/api/auth/login", request);
-    if (response.status === 200) {
-      await fetchUserData();
-      router.push("/");
-    }
+    await fetchUserData();
+    router.push("/");
   } catch (e) {
     if (axios.isAxiosError(e) && e.response?.status === 401) {
       isFailed.value = true;

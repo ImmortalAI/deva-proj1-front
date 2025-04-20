@@ -29,6 +29,7 @@ async function register() {
 
   try {
     const response = await axios.post("/api/auth/register", request);
+    router.push("/login");
   } catch (e) {
     if (axios.isAxiosError(e) && e.response?.status === 401) {
       const data = e.response.data as ErrorResponse;
@@ -84,7 +85,7 @@ async function register() {
             <i class="pi pi-lock" />
           </InputGroupAddon>
           <FloatLabel variant="on">
-            <InputText v-model="repeatPassword" type="password" autocomplete="current-password" name="repeat-password"
+            <InputText id="repeat-password" v-model="repeatPassword" type="password" autocomplete="current-password" name="repeat-password"
               required class="w-full" />
 
             <label for="repeat-password" class="text-sm">Повторите пароль</label>
