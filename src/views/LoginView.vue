@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router';
 import { FloatLabel, InputGroup, InputGroupAddon, InputText, Button } from 'primevue';
 import type { LoginUserRequest } from '@/models/userScheme';
 import fetchUserData from '@/utils/fetchUserData';
+import axios from 'axios';
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -18,22 +19,19 @@ async function login() {
     password: password.value
   }
 
-  const response = await fetch("/api/auth/login", {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(request)
-  });
-
-  if (response.ok) {
-    const data = await response.json();
-    await fetchUserData();
-    await router.push("/")
-  }
-  else {
-    isFailed.value = true;
-    password.value = '';
+  try {
+    const response = await axios.post("/api/auth/login", request);
+    if (response.status === 200) {
+      await fetchUserData();
+      router.push("/");
+    }
+  } catch (e) {
+    if (axios.isAxiosError(e) && e.response?.status === 401) {
+      isFailed.value = true;
+      password.value = '';
+    } else {
+      console.log(e); //FIXME
+    }
   }
 }
 </script>

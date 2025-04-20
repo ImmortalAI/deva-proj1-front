@@ -6,6 +6,7 @@ import type {
 import { reactive, ref, watch } from "vue";
 import { useSSE } from "./useSSE";
 import type { FileInfoResponse } from "@/models/fileScheme";
+import axios from "axios";
 
 export type TaskStatus = "not_started" | "in_progress" | "done";
 
@@ -25,17 +26,15 @@ export function useTask() {
       file_id: fileId,
       task_type: ttype,
     };
-    const response = await fetch("/api/task/create", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(request),
-    });
-    if (response.ok) {
-      taskId.value = (await response.json()) as string;
-      sseConnect(`/api/sse/${taskId.value}`);
-      taskState.value = "in_progress";
+    try {
+      const response = await axios.post("/api/task/create", request);
+      if (response.status === 200) {
+        taskId.value = response.data as string;
+        sseConnect(`/api/sse/${taskId.value}`);
+        taskState.value = "in_progress";
+      }
+    } catch (e) {
+      console.log(e); //FIXME
     }
   };
 
@@ -45,22 +44,20 @@ export function useTask() {
         task_id: taskId.value,
       };
 
-      const response = await fetch(`/api/task/get/${taskId.value}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(request_body),
-      });
-
-      if (response.ok) {
-        ((await response.json()) as FileInfoResponse[]).forEach((file) => {
-          taskResult.push(file);
-        });
-        taskState.value = "done";
-        sseDisconnect();
-      } else {
-        throw Error(response.statusText);
+      try {
+        const response = await axios.post(
+          `/api/task/get/${taskId.value}`,
+          request_body
+        );
+        if (response.status === 200) {
+          (response.data as FileInfoResponse[]).forEach((file) => {
+            taskResult.push(file);
+          });
+          taskState.value = "done";
+          sseDisconnect();
+        }
+      } catch (e) {
+        console.log(e); //FIXME
       }
     } else {
       taskProgressPercentage.value = (
@@ -75,5 +72,5 @@ export function useTask() {
     taskProgressPercentage,
     taskResult,
     createTask,
-  }
+  };
 }

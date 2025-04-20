@@ -1,22 +1,23 @@
 <script setup lang="ts">
-import {useUserStore} from '@/stores/user';
-import {reactive, ref} from 'vue';
-import {RouterLink, useRouter} from 'vue-router'
+import { useUserStore } from '@/stores/user';
+import { reactive, ref } from 'vue';
+import { RouterLink, useRouter } from 'vue-router'
 import { FloatLabel, InputGroup, InputGroupAddon, InputText, Button } from 'primevue';
 import type { RegisterUserRequest } from '@/models/userScheme';
 import type { ErrorResponse } from '@/models/errorScheme';
+import axios from 'axios';
 
 const router = useRouter();
 const userStore = useUserStore();
 const username = ref();
 const password = ref();
 const repeatPassword = ref();
-const failed = reactive({isFailed: false, msg: ""});
+const failed = ref({ isFailed: false, msg: "" });
 
 async function register() {
   if (password.value !== repeatPassword.value) {
-    failed.isFailed = true;
-    failed.msg = "Пароли не совпадают";
+    failed.value.isFailed = true;
+    failed.value.msg = "Пароли не совпадают";
     return;
   }
 
@@ -26,21 +27,25 @@ async function register() {
     password_repeat: repeatPassword.value,
   }
 
-  const response = await fetch("/api/auth/register", {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(request)
-  });
-
-  if (response.ok) {
-    await router.push("/login");
-  } else {
-    const data = await response.json() as ErrorResponse;
-    failed.isFailed = true;
-    failed.msg = data.detail || "Произошла ошибка";
+  try {
+    const response = await axios.post("/api/auth/register", request);
+  } catch (e) {
+    if (axios.isAxiosError(e) && e.response?.status === 401) {
+      const data = e.response.data as ErrorResponse;
+      failed.value.isFailed = true;
+      failed.value.msg = data.detail || "Произошла ошибка";
+    } else {
+      console.log(e); //FIXME
+    }
   }
+
+  // if (response.ok) {
+  //   await router.push("/login");
+  // } else {
+  //   const data = await response.json() as ErrorResponse;
+  //   failed.isFailed = true;
+  //   failed.msg = data.detail || "Произошла ошибка";
+  // }
 }
 </script>
 
@@ -48,7 +53,7 @@ async function register() {
   <div class="flex items-center justify-center min-h-screen">
     <div class="p-6 rounded-xl w-full max-w-sm border">
       <form class="space-y-4 flex flex-col items-center">
-          <p class="text-2xl">Регистрация</p>
+        <p class="text-2xl">Регистрация</p>
 
         <InputGroup>
           <InputGroupAddon>
@@ -88,7 +93,8 @@ async function register() {
 
         <div class="w-full pt-5">
           <Button type="submit" @click.prevent="register"
-            class="w-full !bg-violet-600 hover:!bg-violet-800 hover:!translate-y-0.5 !border-violet-800" label="Зарегистрироваться" />
+            class="w-full !bg-violet-600 hover:!bg-violet-800 hover:!translate-y-0.5 !border-violet-800"
+            label="Зарегистрироваться" />
         </div>
         <p v-if="failed.isFailed" class="py-2 rounded-lg text-red-600">{{ failed.msg }}</p>
         <div class="flex justify-center py-2 rounded-lg">
