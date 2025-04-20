@@ -3,7 +3,7 @@ import type {
   TaskInfoRequest,
   TaskTypes,
 } from "@/models/taskScheme";
-import { ref, watch } from "vue";
+import { reactive, ref, watch } from "vue";
 import { useSSE } from "./useSSE";
 import type { FileInfoResponse } from "@/models/fileScheme";
 
@@ -15,19 +15,7 @@ export function useTask() {
   const taskId = ref("");
   const taskState = ref<TaskStatus>("not_started");
   const taskProgressPercentage = ref("");
-  const taskResult = ref<FileInfoResponse | null>(null);
-
-  type Callback = () => void
-    const taskSubscribers = ref<Callback[]>([]);
-
-  const taskSubscribe = (callback: Callback) => {
-    taskSubscribers.value.push(callback);
-  };
-
-  const taskEmit = () => {
-    taskSubscribers.value.forEach((callback) => callback());
-    taskSubscribers.value = [];
-  };
+  const taskResult = reactive<FileInfoResponse[]>([]);
 
   const createTask = async (fileId: string, ttype: TaskTypes) => {
     if (taskState.value !== "not_started")
@@ -66,9 +54,10 @@ export function useTask() {
       });
 
       if (response.ok) {
-        taskResult.value = (await response.json()) as FileInfoResponse;
+        ((await response.json()) as FileInfoResponse[]).forEach((file) => {
+          taskResult.push(file);
+        });
         taskState.value = "done";
-        taskEmit();
         sseDisconnect();
       } else {
         throw Error(response.statusText);
@@ -80,14 +69,11 @@ export function useTask() {
     }
   });
 
-
-
   return {
     taskId,
     taskState,
     taskProgressPercentage,
     taskResult,
     createTask,
-    taskSubscribe,
   }
 }
