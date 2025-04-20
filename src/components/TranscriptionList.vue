@@ -7,6 +7,7 @@ import { reactive, ref, watch, type PropType } from 'vue';
 import Button from 'primevue/button';
 import InputGroup from 'primevue/inputgroup';
 import InputGroupAddon from 'primevue/inputgroupaddon';
+import axios from 'axios';
 
 const editorStore = useEditorStore();
 const { createTask, taskId, taskState, taskProgressPercentage, taskResult } = useTask();
@@ -25,7 +26,17 @@ const props = defineProps({
 const transcriptionItems = reactive<TimecodeFile[]>([]);
 watch(taskResult, () => {
     if (taskState.value === 'done') {
-        //TODO: fetch file from minio
+        if (taskResult[0].download_url) {
+            axios.get<TimecodeFile[]>(taskResult[0].download_url, { //FIXME: fix download link minio:SOMETHING
+                responseType: 'json',
+            }).then((obj) => {
+                obj.data.forEach((timecode) => {
+                    transcriptionItems.push(timecode);
+                })
+            }).catch((e) => {
+                console.log(e); //FIXME
+            });
+        }
     }
 })
 </script>

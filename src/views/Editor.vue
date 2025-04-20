@@ -3,8 +3,6 @@ import { ref, watch, onMounted } from "vue";
 import FileUpload, { type FileUploadUploaderEvent } from "primevue/fileupload";
 import Button from "primevue/button";
 import Slider from "primevue/slider";
-import InputGroup from "primevue/inputgroup";
-import InputGroupAddon from "primevue/inputgroupaddon";
 import ProgressBar from "primevue/progressbar";
 import { useRoute } from "vue-router";
 import type { FileInfoResponse } from "@/models/fileScheme";
@@ -16,18 +14,15 @@ import type {
 import { useSSE } from "@/composables/useSSE";
 import TranscriptionList from "@/components/TranscriptionList.vue";
 import { useEditorStore } from "@/stores/editor";
+import axios, { type AxiosProgressEvent } from "axios";
 
 const route = useRoute();
 const editorStore = useEditorStore();
 
 const isUploaded = ref(false);
 const uploadProgress = ref(0);
-const uploadedVideoUrl = ref<string | null>(null);
 
 const videoId = ref("");
-const taskId = ref("");
-
-const { sseData, sseConnect, sseDisconnect } = useSSE();
 
 const uploadFile = async (event: FileUploadUploaderEvent) => {
   const file = Array.isArray(event.files) ? event.files[0] : event.files;
@@ -37,18 +32,35 @@ const uploadFile = async (event: FileUploadUploaderEvent) => {
   if (!file) return;
 
   formData.append("file", file);
-  formData.append("project_id", projectId.toString());
-  const response = await fetch("/api/file/upload", {
-    method: "POST",
-    body: formData,
-  });
-
-  if (response.ok) {
-    const data = (await response.json()) as FileInfoResponse;
-    videoId.value = data.id;
+  try {
+    const response = await axios.post("/api/file/upload", formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      params: {
+        project_id: projectId,
+      },
+      onUploadProgress: (progressEvent: AxiosProgressEvent) => {
+        if (progressEvent.lengthComputable && progressEvent.total) {
+          const percent = Math.round(progressEvent.loaded * 100 / progressEvent.total);
+          uploadProgress.value = percent;
+        }
+        else {
+          uploadProgress.value = 1;
+        }
+      }
+    });
+    uploadProgress.value = 100;
+    const data = response.data as FileInfoResponse;
+    editorStore.fileId = data.id;
+    editorStore.fileName = data.name;
     isUploaded.value = true;
+  } catch (e) {
+    console.log(e); //FIXME
   }
 };
+
+const activate = () => console.log("activation");
 
 /* //////////////////////
 async function downloadFromUrl(url: string, filename: string): Promise<void> {
@@ -90,7 +102,7 @@ downloadFromUrl('https://example.com/video.mp4', 'my-video.mp4')
   .catch(console.error);
 ////////////////////// */
 
-interface CommentItem {
+/*interface CommentItem {
   timestamp: string;
   content: string;
 }
@@ -186,13 +198,12 @@ const scrollToActiveItem = () => {
       behavior: "smooth",
     });
   }
-};
+}; */
 </script>
 
 <template>
-  <div class="w-full grid grid-cols-[60%_40%] grid-rows-2 gap-4 p-4">
-    <div
-      class="relative w-full h-96 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
+  <div class="w-full min-h-64 flex gap-4 p-4">
+    <div class="relative basis-3/5 h-full flex items-center justify-center">
       <div v-if="!isUploaded" class="text-center">
         <FileUpload mode="basic" name="video" :auto="true" :customUpload="true" @uploader="uploadFile" accept="video/*"
           chooseLabel="" class="w-full">
@@ -203,21 +214,13 @@ const scrollToActiveItem = () => {
             </div>
           </template>
         </FileUpload>
-        <!-- <ProgressBar 
-        v-if="uploadProgress > 0"
-        :value="uploadProgress"
-        class="w-64 absolute bottom-4 left-1/2 transform -translate-x-1/2"
-      /> -->
+        <ProgressBar v-if="uploadProgress > 0" :value="uploadProgress"
+          class="w-64 absolute bottom-4 left-1/2 transform -translate-x-1/2" />
       </div>
 
-      <!-- <video 
-      v-else
-      :src="uploadedVideoUrl"
-      controls
-      class="w-full h-full rounded-lg object-contain bg-black"
-    /> -->
+      <video v-else :src="editorStore.fileDownloadUrl" controls class="w-full object-contain bg-black aspect-video" />
     </div>
 
-    <TranscriptionList :fileId="editorStore.fileId" :setActive="setActive"></TranscriptionList>
+    <TranscriptionList class="basis-2/5 h-full" :fileId="editorStore.fileId" :setActive="activate"></TranscriptionList>
   </div>
 </template>
