@@ -26,9 +26,8 @@ async function createProject() {
         description: '',
     }
     try {
-        const response = await axios.post('/api/project/create', request);
-        const data = response.data as ProjectCreateResponse;
-        router.push(`/edit/${data.id}`);
+        const response = await axios.post<ProjectCreateResponse>('/api/project/create', request);
+        router.push(`/edit/${response.data.id}`);
     } catch (e) {
         console.log(e); //FIXME
     }

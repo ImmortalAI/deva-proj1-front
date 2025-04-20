@@ -20,7 +20,7 @@ async function login() {
   }
 
   try {
-    const response = await axios.post("/api/auth/login", request);
+    await axios.post("/api/auth/login", request);
     await fetchUserData();
     router.push("/");
   } catch (e) {

@@ -33,7 +33,7 @@ const uploadFile = async (event: FileUploadUploaderEvent) => {
 
   formData.append("file", file);
   try {
-    const response = await axios.post("/api/file/upload", formData, {
+    const response = await axios.post<FileInfoResponse>("/api/file/upload", formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -51,9 +51,8 @@ const uploadFile = async (event: FileUploadUploaderEvent) => {
       }
     });
     uploadProgress.value = 100;
-    const data = response.data as FileInfoResponse;
-    editorStore.fileId = data.id;
-    editorStore.fileName = data.name;
+    editorStore.fileId = response.data.id;
+    editorStore.fileName = response.data.name;
     isUploaded.value = true;
   } catch (e) {
     console.log(e); //FIXME

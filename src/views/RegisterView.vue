@@ -28,7 +28,7 @@ async function register() {
   }
 
   try {
-    const response = await axios.post("/api/auth/register", request);
+    await axios.post("/api/auth/register", request);
     router.push("/login");
   } catch (e) {
     if (axios.isAxiosError(e) && e.response?.status === 401) {

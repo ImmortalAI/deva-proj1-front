@@ -6,9 +6,8 @@ export default async function () {
   const user = useUserStore();
 
   try {
-    const response = await axios.get("/api/auth/user_info");
-    const data = response.data as User;
-    user.username = data.login;
+    const response = await axios.get<User>("/api/auth/user_info");
+    user.username = response.data.login;
   } catch (e) {
     console.log(e); // FIXME
   }

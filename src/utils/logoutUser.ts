@@ -5,7 +5,7 @@ export default async function () {
   const store = useUserStore();
 
   try {
-    const response = await axios.post("/api/auth/logout");
+    await axios.post("/api/auth/logout");
     store.username = "";
   } catch (e) {
     console.log(e); // FIXME

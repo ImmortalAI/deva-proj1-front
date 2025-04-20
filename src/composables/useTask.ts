@@ -27,8 +27,8 @@ export function useTask() {
       task_type: ttype,
     };
     try {
-      const response = await axios.post("/api/task/create", request);
-      taskId.value = response.data as string;
+      const response = await axios.post<string>("/api/task/create", request);
+      taskId.value = response.data;
       sseConnect(`/api/sse/${taskId.value}`);
       taskState.value = "in_progress";
     } catch (e) {
@@ -39,8 +39,8 @@ export function useTask() {
   watch(sseData, async (newValue) => {
     if (newValue?.data.done) {
       try {
-        const response = await axios.get(`/api/task/get/${taskId.value}`);
-        (response.data as FileInfoResponse[]).forEach((file) => {
+        const response = await axios.get<FileInfoResponse[]>(`/api/task/get/${taskId.value}`);
+        response.data.forEach((file) => {
           taskResult.push(file);
         });
         taskState.value = "done";
