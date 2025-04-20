@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { useSSE } from '@/composables/useSSE';
 import { useTask } from '@/composables/useTask';
 import type { FileInfoResponse, TimecodeFile } from '@/models/fileScheme';
-import type { TaskCreateRequest, TaskInfoRequest, TaskTypes } from '@/models/taskScheme';
 import { useEditorStore } from '@/stores/editor';
+
+import { reactive, ref, watch, type PropType } from 'vue';
 import Button from 'primevue/button';
-import { ref, watch, type PropType } from 'vue';
+import InputGroup from 'primevue/inputgroup';
+import InputGroupAddon from 'primevue/inputgroupaddon';
 
 const editorStore = useEditorStore();
 const { createTask, taskId, taskState, taskProgressPercentage, taskResult } = useTask();
@@ -21,31 +22,23 @@ const props = defineProps({
     }
 })
 
-const transcriptionItems = ref<TimecodeFile[]>([]);
+const transcriptionItems = reactive<TimecodeFile[]>([]);
+watch(taskResult, () => {
+    if (taskState.value === 'done') {
+        //TODO: fetch file from minio
+    }
+})
 </script>
 
 <template>
-    <div v-if="taskState !== 'done'" class="w-full flex items-center justify-center">
-        <Button v-if="!taskState" @click="createTask(props.fileId, 'transcribe')" class="w-12 h-12 p-0 rounded-full" >Транскрибировать</Button>
+    <div v-if="taskState !== 'done'" class="w-full h-full flex items-center justify-center">
+        <Button v-if="taskState === 'not_started'" @click="createTask(props.fileId, 'transcribe')" class="w-fit h-fit p-0 rounded-full" >Транскрибировать</Button>
         <p v-else>{{ taskProgressPercentage }}%</p>
     </div>
     <div v-else class="flex flex-col">
         <div v-for="(item, index) in transcriptionItems" :key="index" @click="setActive(index)">
           <h3>{{ item.start }} - {{ item.end }}</h3>
           <p>{{ item.data }}</p>
-          <!-- <InputGroup v-if="inEditIndex === index">
-            <InputGroupAddon>
-              <Button icon="pi pi-check" @click="saveTranscription" />
-            </InputGroupAddon>
-            <InputText v-model="item.content" />
-            <InputGroupAddon>
-              <i class="pi pi-times"></i>
-            </InputGroupAddon>
-          </InputGroup>
-          <div v-else>
-            <p>{{ item.content }}</p>
-            <i class="pi pi-pencil" @click="setEdit(index)"></i>
-          </div> -->
         </div>
       </div>
 </template>
