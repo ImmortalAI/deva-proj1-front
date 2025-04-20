@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import type { ProjectCreateRequest, ProjectCreateResponse } from '@/models/projectScheme';
-import axios from 'axios';
+import type { ProjectCreateRequest } from '@/models/projectScheme';
+import { createProject } from '@/utils/projectCRUD';
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -20,16 +20,14 @@ const router = useRouter();
 const divElement = ref<HTMLDivElement | null>(null)
 const toRef = computed(() => `/edit/${props.idFile}`)
 
-async function createProject() {
+const createProj = async () => {
     const request: ProjectCreateRequest = {
         name: props.nameFile,
-        description: '',
+        description: "",
     }
-    try {
-        const response = await axios.post<ProjectCreateResponse>('/api/project/create', request);
-        router.push(`/edit/${response.data.id}`);
-    } catch (e) {
-        console.log(e); //FIXME
+    const info = await createProject(request);
+    if (info) {
+        router.push(`/edit/${info.id}`);
     }
 }
 
@@ -44,7 +42,7 @@ onMounted(() => {
     <div ref="divElement" class="w-full p-2 border-2 border-violet-900 rounded-2xl">
         <RouterLink v-if="props.idFile !== '0'" class="block w-full" :to="toRef"><span
                 class="text-center block w-full">{{ props.nameFile }}</span></RouterLink>
-        <a href="#" @click.prevent="createProject" v-else class="block w-full"><span class="text-center block w-full">{{
+        <a href="#" @click.prevent="createProj" v-else class="block w-full"><span class="text-center block w-full">{{
             props.nameFile }}</span></a>
     </div>
 </template>

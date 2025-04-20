@@ -1,24 +1,35 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 import FileElement from '@/components/FileElement.vue'
 import { useUserStore } from '@/stores/user';
+import { fetchProjects } from '@/utils/projectCRUD';
 
 const user = useUserStore();
 
 interface FileData {
-  id: number;
+  id: string;
   name: string;
   imageUrl?: string;
 }
 
-const availableFiles = ref<FileData[]>([{name: "Новый проект", id: 0}, {name: "AbobaProj1", id: 1}, {name: "AbobaProj2", id: 2}]);
+const availableFiles = ref<FileData[]>([{name: "Новый проект", id: "0"}]);
+onMounted(async () => {
+  if (user.isAuthenticated) {
+    if(availableFiles.value.length > 1) {
+      availableFiles.value = [{name: "Новый проект", id: "0"}];
+    }
+    (await fetchProjects())?.forEach((project) => {
+      availableFiles.value.push(project);
+  })
+  }
+})
 </script>
 
 <template>
   <main class="ml-[10%] mr-[10%] mt-8">
     <div v-if="user.isAuthenticated">
       <div v-for="availableFile in availableFiles">
-        <FileElement class="mb-4" :idFile="availableFile.id.toString()" :imgFile="availableFile.imageUrl" :nameFile="availableFile.name" />
+        <FileElement class="mb-4" :idFile="availableFile.id" :imgFile="availableFile.imageUrl" :nameFile="availableFile.name" />
       </div>
     </div>
     <div v-else>

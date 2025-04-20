@@ -1,7 +1,10 @@
 export interface FileInfoResponse {
     id: string;
     name: string;
-    download_url?: string;
+}
+
+export interface FileFullInfoResponse extends FileInfoResponse {
+    download_url: string;
 }
 
 export interface TimecodeFile {
