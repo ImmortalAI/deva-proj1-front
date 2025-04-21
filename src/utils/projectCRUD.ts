@@ -4,8 +4,8 @@ import type {
   ProjectInfoResponse,
   ProjectPatchRequest,
 } from "@/models/projectScheme";
+import { useUserStore } from "@/stores/user";
 import axios from "axios";
-import fetchUserData from "./fetchUserData";
 
 export async function createProject(createRequest: ProjectCreateRequest) {
   try {
@@ -51,15 +51,17 @@ export async function fetchProjects() {
 }
 
 export async function fetchProjectFiles(id: string) {
+  const userStore = useUserStore();
   try {
     const response = await axios.get<FileInfoResponse[]>(
       `/api/project/get_files/${id}`
     );
     return response.data;
   } catch (e) {
-    if(axios.isAxiosError(e) && e.response?.status === 401) {
-      fetchUserData();
+    if (axios.isAxiosError(e) && e.response?.status === 401) {
+      await userStore.fetchUserData();
+    } else {
+      console.log(e); //FIXME
     }
-    console.log(e); //FIXME
   }
 }

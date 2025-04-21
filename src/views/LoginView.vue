@@ -4,7 +4,6 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { FloatLabel, InputGroup, InputGroupAddon, InputText, Button } from 'primevue';
 import type { LoginUserRequest } from '@/models/userScheme';
-import fetchUserData from '@/utils/fetchUserData';
 import axios from 'axios';
 
 const router = useRouter();
@@ -21,7 +20,7 @@ async function login() {
 
   try {
     await axios.post("/api/auth/login", request);
-    await fetchUserData();
+    await userStore.fetchUserData();
     router.push("/");
   } catch (e) {
     if (axios.isAxiosError(e) && e.response?.status === 401) {
