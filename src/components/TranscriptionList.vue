@@ -7,6 +7,7 @@ import Button from 'primevue/button';
 import axios from 'axios';
 import { useSSE } from '@/composables/useSSE';
 import type { TaskCreateRequest, TaskCreateResponse } from '@/models/taskScheme';
+import timeConverter from '@/utils/timeConverter';
 
 const editorStore = useEditorStore();
 const sse = useSSE();
@@ -69,7 +70,7 @@ watch(sse.sseData, async (newValue) => {
 
 const transcriptionItems = reactive<TimecodeFile[]>([]);
 const downloadTranscription = async () => {
-    await axios.post<TimecodeFile[]>("/api/file/download_files",//FIXME: fix download link minio:SOMETHING
+    await axios.post<TimecodeFile[]>("/api/file/download_files",
         [
             editorStore.taskResult[0].id,
         ]).then((response) => {
@@ -92,7 +93,7 @@ const downloadTranscription = async () => {
     </div>
     <div v-else class="flex flex-col">
         <div v-for="(item, index) in transcriptionItems" :key="index" @click="setActive(index)">
-            <h3>{{ item.start }} - {{ item.end }}</h3>
+            <h3>{{ timeConverter(item.start) }} - {{ timeConverter(item.end) }}</h3>
             <p>{{ item.text }}</p>
         </div>
     </div>
