@@ -19,7 +19,8 @@ export function useSSE() {
         console.error(e);
       }
     };
-    es.onerror = () => {
+    es.onerror = (e) => {
+      if (data.value?.done) return;
       error.value = "Connection error, retrying in 3 s...";
       es?.close();
       setTimeout(() => connect(url), 3000);

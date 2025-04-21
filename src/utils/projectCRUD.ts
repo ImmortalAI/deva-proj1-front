@@ -5,6 +5,7 @@ import type {
   ProjectPatchRequest,
 } from "@/models/projectScheme";
 import axios from "axios";
+import fetchUserData from "./fetchUserData";
 
 export async function createProject(createRequest: ProjectCreateRequest) {
   try {
@@ -56,6 +57,9 @@ export async function fetchProjectFiles(id: string) {
     );
     return response.data;
   } catch (e) {
+    if(axios.isAxiosError(e) && e.response?.status === 401) {
+      fetchUserData();
+    }
     console.log(e); //FIXME
   }
 }

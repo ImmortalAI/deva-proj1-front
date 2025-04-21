@@ -6,11 +6,6 @@ import Slider from "primevue/slider";
 import ProgressBar from "primevue/progressbar";
 import { useRoute } from "vue-router";
 import type { FileInfoResponse } from "@/models/fileScheme";
-import type {
-  TaskCreateRequest,
-  TaskInfoRequest,
-  TaskTypes,
-} from "@/models/taskScheme";
 import { useSSE } from "@/composables/useSSE";
 import TranscriptionList from "@/components/TranscriptionList.vue";
 import { useEditorStore } from "@/stores/editor";
@@ -201,9 +196,9 @@ const scrollToActiveItem = () => {
 </script>
 
 <template>
-  <div class="w-full min-h-64 flex gap-4 p-4">
-    <div class="relative basis-3/5 h-full flex items-center justify-center">
-      <div v-if="!isUploaded" class="text-center">
+  <div class="w-full h-fit flex gap-4 p-4">
+    <div class="relative basis-3/5 flex items-center justify-center">
+      <div v-if="!isUploaded" class="p-6 text-center">
         <FileUpload mode="basic" name="video" :auto="true" :customUpload="true" @uploader="uploadFile" accept="video/*"
           chooseLabel="" class="w-full">
           <template #content>
@@ -220,6 +215,6 @@ const scrollToActiveItem = () => {
       <video v-else :src="editorStore.fileDownloadUrl" controls class="w-full object-contain bg-black aspect-video" />
     </div>
 
-    <TranscriptionList class="basis-2/5 h-full" :fileId="editorStore.fileId" :setActive="activate"></TranscriptionList>
+    <TranscriptionList class="basis-2/5 p-6" :fileId="editorStore.fileId" :setActive="activate"></TranscriptionList>
   </div>
 </template>

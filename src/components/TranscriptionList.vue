@@ -1,16 +1,15 @@
 <script setup lang="ts">
-import { useTask } from '@/composables/useTask';
-import type { FileInfoResponse, TimecodeFile } from '@/models/fileScheme';
+import type { FileFullInfoResponse, FileInfoResponse, TimecodeFile } from '@/models/fileScheme';
 import { useEditorStore } from '@/stores/editor';
 
 import { reactive, ref, watch, type PropType } from 'vue';
 import Button from 'primevue/button';
-import InputGroup from 'primevue/inputgroup';
-import InputGroupAddon from 'primevue/inputgroupaddon';
 import axios from 'axios';
+import { useSSE } from '@/composables/useSSE';
+import type { TaskCreateRequest, TaskCreateResponse } from '@/models/taskScheme';
 
 const editorStore = useEditorStore();
-const { createTask, taskId, taskState, taskProgressPercentage, taskResult } = useTask();
+const sse = useSSE();
 
 const props = defineProps({
     fileId: {
@@ -23,33 +22,76 @@ const props = defineProps({
     }
 })
 
-const transcriptionItems = reactive<TimecodeFile[]>([]);
-watch(taskResult, () => {
-    if (taskState.value === 'done') {
-        if (taskResult[0].download_url) {
-            axios.get<TimecodeFile[]>(taskResult[0].download_url, { //FIXME: fix download link minio:SOMETHING
-                responseType: 'json',
-            }).then((obj) => {
-                obj.data.forEach((timecode) => {
-                    transcriptionItems.push(timecode);
-                })
-            }).catch((e) => {
-                console.log(e); //FIXME
-            });
-        }
+const createTask = async (taskCR: TaskCreateRequest) => {
+    if (editorStore.taskState !== "not_started") {
+        console.error("Task already in progress");
+        return;
     }
-})
+
+    try {
+        const response = await axios.post<TaskCreateResponse>(
+            "/api/task/create",
+            {},
+            {
+                params: taskCR,
+            }
+        );
+        editorStore.taskId = response.data.task_id;
+        sse.sseConnect(`/api/sse/${editorStore.taskId}`);
+        editorStore.taskState = "in_progress";
+    } catch (e) {
+        console.log(e); //FIXME
+    }
+};
+
+watch(sse.sseData, async (newValue) => {
+    if (newValue === null) return;
+    if (newValue.done) {
+        try {
+            const response = await axios.get<FileFullInfoResponse[]>(
+                `/api/task/get/${editorStore.taskId}`
+            );
+            response.data.forEach((file) => {
+                editorStore.taskResult.push(file);
+            });
+            editorStore.taskState = "done";
+            sse.sseDisconnect();
+            await downloadTranscription();
+        } catch (e) {
+            console.log(e); //FIXME
+        }
+    } else {
+        editorStore.taskProgressPercentage = (
+            parseFloat(newValue.status ?? "0") * 100
+        ).toFixed(0);
+    }
+});
+
+const transcriptionItems = reactive<TimecodeFile[]>([]);
+const downloadTranscription = async () => {
+    // await axios.get<TimecodeFile[]>(editorStore.taskResult[0].download_url, { //FIXME: fix download link minio:SOMETHING
+    //     responseType: 'json',
+    // }).then((response) => {
+    //     response.data.forEach((timecode) => {
+    //         transcriptionItems.push(timecode);
+    //     })
+    // }).catch((e) => {
+    //     console.log(e); //FIXME
+    // });
+}
 </script>
 
 <template>
-    <div v-if="taskState !== 'done'" class="w-full h-full flex items-center justify-center">
-        <Button v-if="taskState === 'not_started'" @click="createTask(props.fileId, 'transcribe')" class="w-fit h-fit p-0 rounded-full" >Транскрибировать</Button>
-        <p v-else>{{ taskProgressPercentage }}%</p>
+    <div v-if="editorStore.taskState !== 'done'" class="w-full h-full flex items-center justify-center">
+        <Button v-if="editorStore.taskState === 'not_started'"
+            @click="createTask({ file_id: props.fileId, task_type: 'transcribe' })"
+            class="w-fit h-fit p-0 rounded-full">Транскрибировать</Button>
+        <p v-else>{{ editorStore.taskProgressPercentage }}%</p>
     </div>
     <div v-else class="flex flex-col">
         <div v-for="(item, index) in transcriptionItems" :key="index" @click="setActive(index)">
-          <h3>{{ item.start }} - {{ item.end }}</h3>
-          <p>{{ item.data }}</p>
+            <h3>{{ item.start }} - {{ item.end }}</h3>
+            <p>{{ item.data }}</p>
         </div>
-      </div>
+    </div>
 </template>
