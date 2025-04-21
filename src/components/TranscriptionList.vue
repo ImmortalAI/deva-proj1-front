@@ -27,12 +27,11 @@ const props = defineProps({
     }
 })
 
-onBeforeMount(async () => {
-    console.log("Before mount");
+watch(() => props.transcriptionFound, () => {
     if (props.transcriptionFound) {
         console.log("Ts found");
         editorStore.taskState = 'done';
-        await downloadTranscription();
+        downloadTranscription();
     }
 })
 
