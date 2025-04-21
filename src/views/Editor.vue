@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onBeforeUnmount, onBeforeMount } from "vue";
+import { ref, onBeforeUnmount, onBeforeMount, computed } from "vue";
 import FileUpload, { type FileUploadUploaderEvent } from "primevue/fileupload";
 import ProgressBar from "primevue/progressbar";
 import { useRoute } from "vue-router";
@@ -45,22 +45,22 @@ const uploadFile = async (event: FileUploadUploaderEvent) => {
     editorStore.fileId = response.data.id;
     editorStore.fileName = response.data.name;
     isUploaded.value = true;
-    await getVideoUrl();
+    editorStore.fileDownloadUrl = `/api/file/video/${editorStore.fileId}`
   } catch (e) {
     console.log(e); //FIXME
   }
 };
 
-async function getVideoUrl() {
-  try {
-    const response = await axios.post<FileDownloadDataResponse[]>(`/api/file/get_download_urls`, [
-      editorStore.fileId,
-    ]);
-    editorStore.fileDownloadUrl = (response.data[0].download_url as string).replace("minio", "localhost");
-  } catch (e) {
-    console.log(e); //FIXME
-  }
-}
+// async function getVideoUrl() {
+//   try {
+//     const response = await axios.post<FileDownloadDataResponse[]>(`/api/file/get_download_urls`, [
+//       editorStore.fileId,
+//     ]);
+//     editorStore.fileDownloadUrl = `/api/file/download/${editorStore.fileId}` // (response.data[0].download_url as string).replace("minio", "localhost");
+//   } catch (e) {
+//     console.log(e); //FIXME
+//   }
+// }
 
 const activate = () => console.log("activation");
 
@@ -201,6 +201,19 @@ const scrollToActiveItem = () => {
     });
   }
 }; */
+
+const getAnyDescription = computed(() => {
+  if (editorStore.projectDescription === "") {
+    return "Описание отсутствует";
+  } else {
+    return editorStore.projectDescription;
+  }
+})
+
+const changeProjectName = () => {
+  
+}
+
 onBeforeMount(async () => {
   try {
     const response = await fetchProjectFiles(route.params.id as string);
@@ -210,7 +223,7 @@ onBeforeMount(async () => {
       editorStore.fileId = mediaFile.id;
       editorStore.fileName = mediaFile.name;
       isUploaded.value = true;
-      await getVideoUrl();
+      editorStore.fileDownloadUrl = `/api/file/video/${editorStore.fileId}`
 
       const tsFile = response.find((file) => file.name === "transcript.json");
       if (tsFile) {
@@ -233,27 +246,31 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-
-  <div class="w-full h-fit flex gap-4 p-4">
-    <div class="relative basis-3/5 flex items-center justify-center">
-      <div v-if="!isUploaded && uploadProgress === 0" class="p-6 text-center">
-        <FileUpload mode="basic" name="video" :auto="true" :customUpload="true" @uploader="uploadFile" accept="video/*"
-          chooseLabel="" class="w-full">
-          <template #content>
-            <div class="flex flex-col items-center gap-2 p-4">
-              <i class="pi pi-cloud-upload text-4xl text-blue-500" />
-              <span class="text-gray-600">Choose a file or drop it here</span>
-            </div>
-          </template>
-        </FileUpload>
-        <ProgressBar v-if="uploadProgress > 0" :value="uploadProgress"
-          class="w-64 absolute bottom-4 left-1/2 transform -translate-x-1/2" />
-      </div>
-
-      <video v-else :src="editorStore.fileDownloadUrl" controls class="w-full object-contain bg-black aspect-video" />
+  <div class="w-full h-full box-border flex flex-col">
+    <div>
+      <p class="p-2 text-2xl" @click="">{{ editorStore.projectName }}</p>
+      <p class="p-2 text-sm">{{ getAnyDescription }}</p>
     </div>
-
-    <TranscriptionList class="basis-2/5 p-6 max-h-[32rem] overflow-y-scroll" :fileId="editorStore.fileId"
-      :transcription-found="transcriptionFound" :setActive="activate"></TranscriptionList>
+    <div class="w-full h-full box-border flex gap-4 p-4 flex-row">
+      <div class="relative basis-3/5 flex items-center justify-center">
+        <div v-if="!isUploaded && uploadProgress === 0" class="p-6 text-center">
+          <FileUpload mode="basic" name="video" :auto="true" :customUpload="true" @uploader="uploadFile" accept="video/*"
+            chooseLabel="" class="w-full">
+            <template #content>
+              <div class="flex flex-col items-center gap-2 p-4">
+                <i class="pi pi-cloud-upload text-4xl text-blue-500" />
+                <span class="text-gray-600">Choose a file or drop it here</span>
+              </div>
+            </template>
+          </FileUpload>
+          <ProgressBar v-if="uploadProgress > 0" :value="uploadProgress"
+            class="w-64 absolute bottom-4 left-1/2 transform -translate-x-1/2" />
+        </div>
+        <video v-else :src="editorStore.fileDownloadUrl" controls class="w-full object-contain bg-black aspect-video" />
+      </div>
+    
+      <TranscriptionList class="p-6 basis-2/5 h-full overflow-y-scroll flex-grow" :fileId="editorStore.fileId"
+        :transcription-found="transcriptionFound" :setActive="activate"></TranscriptionList>
+    </div>
   </div>
 </template>

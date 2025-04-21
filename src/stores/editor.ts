@@ -5,6 +5,9 @@ import { defineStore } from "pinia";
 import { reactive, ref } from "vue";
 
 export const useEditorStore = defineStore("editor", () => {
+  const projectName = ref("");
+  const projectDescription = ref("");
+
   const fileId = ref("");
   const fileName = ref("");
   const fileDownloadUrl = ref("");
@@ -16,6 +19,9 @@ export const useEditorStore = defineStore("editor", () => {
 
   const sse = useSSE();
   function reset() {
+    projectName.value = "";
+    projectDescription.value = "";
+
     fileId.value = "";
     fileName.value = "";
     fileDownloadUrl.value = "";
@@ -30,6 +36,8 @@ export const useEditorStore = defineStore("editor", () => {
   }
 
   return {
+    projectName,
+    projectDescription,
     fileId,
     fileName,
     fileDownloadUrl,
