@@ -23,6 +23,7 @@ export const useEditorStore = defineStore("editor", () => {
     if (taskState.value === "in_progress") {
       sse.sseDisconnect();
     }
+    taskId.value = "";
     taskState.value = "not_started";
     taskProgressPercentage.value = "";
     taskResult.length = 0;

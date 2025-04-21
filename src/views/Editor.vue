@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from "vue";
+import { ref, watch, onMounted, onBeforeUnmount } from "vue";
 import FileUpload, { type FileUploadUploaderEvent } from "primevue/fileupload";
 import Button from "primevue/button";
 import Slider from "primevue/slider";
 import ProgressBar from "primevue/progressbar";
 import { useRoute } from "vue-router";
-import type { FileInfoResponse } from "@/models/fileScheme";
+import type { FileDownloadDataResponse, FileInfoResponse } from "@/models/fileScheme";
 import { useSSE } from "@/composables/useSSE";
 import TranscriptionList from "@/components/TranscriptionList.vue";
 import { useEditorStore } from "@/stores/editor";
@@ -49,10 +49,22 @@ const uploadFile = async (event: FileUploadUploaderEvent) => {
     editorStore.fileId = response.data.id;
     editorStore.fileName = response.data.name;
     isUploaded.value = true;
+    await getVideoUrl();
   } catch (e) {
     console.log(e); //FIXME
   }
 };
+
+async function getVideoUrl() {
+  try {
+    const response = await axios.post<FileDownloadDataResponse[]>(`/api/file/get_download_urls`, [
+      editorStore.fileId,
+    ]);
+    editorStore.fileDownloadUrl = response.data[0].download_url.replace("minio", "localhost");
+  } catch (e) {
+    console.log(e); //FIXME
+  }
+}
 
 const activate = () => console.log("activation");
 
@@ -193,9 +205,13 @@ const scrollToActiveItem = () => {
     });
   }
 }; */
+onBeforeUnmount(() => {
+  editorStore.reset();
+})
 </script>
 
 <template>
+
   <div class="w-full h-fit flex gap-4 p-4">
     <div class="relative basis-3/5 flex items-center justify-center">
       <div v-if="!isUploaded" class="p-6 text-center">
