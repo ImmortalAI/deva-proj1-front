@@ -69,15 +69,17 @@ watch(sse.sseData, async (newValue) => {
 
 const transcriptionItems = reactive<TimecodeFile[]>([]);
 const downloadTranscription = async () => {
-    // await axios.get<TimecodeFile[]>(editorStore.taskResult[0].download_url, { //FIXME: fix download link minio:SOMETHING
-    //     responseType: 'json',
-    // }).then((response) => {
-    //     response.data.forEach((timecode) => {
-    //         transcriptionItems.push(timecode);
-    //     })
-    // }).catch((e) => {
-    //     console.log(e); //FIXME
-    // });
+    await axios.post<TimecodeFile[]>("/api/file/download_files",//FIXME: fix download link minio:SOMETHING
+        [
+            editorStore.taskResult[0].id,
+        ]).then((response) => {
+            response.data.forEach((item) => {
+                transcriptionItems.push(item);
+            });
+            console.log(transcriptionItems);
+        }).catch((e) => {
+            console.log(e); //FIXME
+        });
 }
 </script>
 
@@ -91,7 +93,7 @@ const downloadTranscription = async () => {
     <div v-else class="flex flex-col">
         <div v-for="(item, index) in transcriptionItems" :key="index" @click="setActive(index)">
             <h3>{{ item.start }} - {{ item.end }}</h3>
-            <p>{{ item.data }}</p>
+            <p>{{ item.text }}</p>
         </div>
     </div>
 </template>

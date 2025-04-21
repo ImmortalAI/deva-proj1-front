@@ -10,5 +10,5 @@ export interface FileFullInfoResponse extends FileInfoResponse {
 export interface TimecodeFile {
     start: string;
     end: string;
-    data: string;
+    text: string;
 }
