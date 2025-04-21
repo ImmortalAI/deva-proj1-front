@@ -1,4 +1,4 @@
-import type { FileInfoResponse } from "@/models/fileScheme";
+import type { FileDownloadDataResponse, FileInfoResponse } from "@/models/fileScheme";
 import type {
   ProjectCreateRequest,
   ProjectInfoResponse,
@@ -53,7 +53,7 @@ export async function fetchProjects() {
 export async function fetchProjectFiles(id: string) {
   const userStore = useUserStore();
   try {
-    const response = await axios.get<FileInfoResponse[]>(
+    const response = await axios.get<FileDownloadDataResponse[]>(
       `/api/project/get_files/${id}`
     );
     return response.data;

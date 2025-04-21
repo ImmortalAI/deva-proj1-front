@@ -1,5 +1,5 @@
 import { useSSE } from "@/composables/useSSE";
-import type { FileFullInfoResponse } from "@/models/fileScheme";
+import type { FileInfoResponse } from "@/models/fileScheme";
 import type { TaskStatus } from "@/models/taskScheme";
 import { defineStore } from "pinia";
 import { reactive, ref } from "vue";
@@ -12,7 +12,7 @@ export const useEditorStore = defineStore("editor", () => {
   const taskId = ref("");
   const taskState = ref<TaskStatus>("not_started");
   const taskProgressPercentage = ref("");
-  const taskResult = reactive<FileFullInfoResponse[]>([]);
+  const taskResult = reactive<FileInfoResponse[]>([]);
 
   const sse = useSSE();
   function reset() {

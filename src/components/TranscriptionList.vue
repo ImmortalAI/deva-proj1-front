@@ -2,7 +2,7 @@
 import type { FileFullInfoResponse, FileInfoResponse, TimecodeFile } from '@/models/fileScheme';
 import { useEditorStore } from '@/stores/editor';
 
-import { reactive, ref, watch, type PropType } from 'vue';
+import { onBeforeMount, onMounted, reactive, ref, watch, type PropType } from 'vue';
 import Button from 'primevue/button';
 import axios from 'axios';
 import { useSSE } from '@/composables/useSSE';
@@ -15,11 +15,24 @@ const sse = useSSE();
 const props = defineProps({
     fileId: {
         type: String,
-        required: true
+        required: true,
     },
     setActive: {
         type: Function as PropType<(index: number) => void>,
-        required: true
+        required: true,
+    },
+    transcriptionFound: {
+        type: Boolean,
+        required: false,
+    }
+})
+
+onBeforeMount(async () => {
+    console.log("Before mount");
+    if (props.transcriptionFound) {
+        console.log("Ts found");
+        editorStore.taskState = 'done';
+        await downloadTranscription();
     }
 })
 
@@ -49,7 +62,7 @@ watch(sse.sseData, async (newValue) => {
     if (newValue === null) return;
     if (newValue.done) {
         try {
-            const response = await axios.get<FileFullInfoResponse[]>(
+            const response = await axios.get<FileInfoResponse[]>(
                 `/api/task/get/${editorStore.taskId}`
             );
             response.data.forEach((file) => {
@@ -93,7 +106,7 @@ const downloadTranscription = async () => {
     </div>
     <div v-else class="flex flex-col">
         <div v-for="(item, index) in transcriptionItems" :key="index" @click="setActive(index)">
-            <h3>{{ timeConverter(item.start) }} - {{ timeConverter(item.end) }}</h3>
+            <h2>{{ timeConverter(item.start) }} - {{ timeConverter(item.end) }}</h2>
             <p>{{ item.text }}</p>
         </div>
     </div>

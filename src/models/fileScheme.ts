@@ -19,5 +19,5 @@ export interface FileDownloadDataResponse {
     file_type: string;
     created_date: string;
     last_modified_date: string;
-    download_url: string;
+    download_url: string | null;
 }

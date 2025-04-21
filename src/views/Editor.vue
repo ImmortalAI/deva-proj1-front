@@ -1,23 +1,20 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, onBeforeUnmount } from "vue";
+import { ref, onBeforeUnmount, onBeforeMount } from "vue";
 import FileUpload, { type FileUploadUploaderEvent } from "primevue/fileupload";
-import Button from "primevue/button";
-import Slider from "primevue/slider";
 import ProgressBar from "primevue/progressbar";
 import { useRoute } from "vue-router";
 import type { FileDownloadDataResponse, FileInfoResponse } from "@/models/fileScheme";
-import { useSSE } from "@/composables/useSSE";
 import TranscriptionList from "@/components/TranscriptionList.vue";
 import { useEditorStore } from "@/stores/editor";
 import axios, { type AxiosProgressEvent } from "axios";
+import { fetchProjectFiles } from "@/utils/projectCRUD";
 
 const route = useRoute();
 const editorStore = useEditorStore();
 
 const isUploaded = ref(false);
 const uploadProgress = ref(0);
-
-const videoId = ref("");
+const transcriptionFound = ref(false);
 
 const uploadFile = async (event: FileUploadUploaderEvent) => {
   const file = Array.isArray(event.files) ? event.files[0] : event.files;
@@ -45,7 +42,6 @@ const uploadFile = async (event: FileUploadUploaderEvent) => {
         }
       }
     });
-    uploadProgress.value = 100;
     editorStore.fileId = response.data.id;
     editorStore.fileName = response.data.name;
     isUploaded.value = true;
@@ -60,7 +56,7 @@ async function getVideoUrl() {
     const response = await axios.post<FileDownloadDataResponse[]>(`/api/file/get_download_urls`, [
       editorStore.fileId,
     ]);
-    editorStore.fileDownloadUrl = response.data[0].download_url.replace("minio", "localhost");
+    editorStore.fileDownloadUrl = (response.data[0].download_url as string).replace("minio", "localhost");
   } catch (e) {
     console.log(e); //FIXME
   }
@@ -205,6 +201,32 @@ const scrollToActiveItem = () => {
     });
   }
 }; */
+onBeforeMount(async () => {
+  try {
+    const response = await fetchProjectFiles(route.params.id as string);
+    console.log(response);
+    if (response && response.length > 0) {
+      const mediaFile = response.find((file) => file.file_type.startsWith("video")) as FileDownloadDataResponse;
+      editorStore.fileId = mediaFile.id;
+      editorStore.fileName = mediaFile.name;
+      isUploaded.value = true;
+      await getVideoUrl();
+
+      const tsFile = response.find((file) => file.name === "transcript.json");
+      if (tsFile) {
+        const completeTask: FileInfoResponse = {
+          id: tsFile.id,
+          name: tsFile.name,
+        }
+        editorStore.taskResult.push(completeTask);
+        transcriptionFound.value = true;
+      }
+    }
+  } catch (e) {
+    console.log(e); //FIXME
+  }
+})
+
 onBeforeUnmount(() => {
   editorStore.reset();
 })
@@ -214,7 +236,7 @@ onBeforeUnmount(() => {
 
   <div class="w-full h-fit flex gap-4 p-4">
     <div class="relative basis-3/5 flex items-center justify-center">
-      <div v-if="!isUploaded" class="p-6 text-center">
+      <div v-if="!isUploaded && uploadProgress === 0" class="p-6 text-center">
         <FileUpload mode="basic" name="video" :auto="true" :customUpload="true" @uploader="uploadFile" accept="video/*"
           chooseLabel="" class="w-full">
           <template #content>
@@ -231,6 +253,7 @@ onBeforeUnmount(() => {
       <video v-else :src="editorStore.fileDownloadUrl" controls class="w-full object-contain bg-black aspect-video" />
     </div>
 
-    <TranscriptionList class="basis-2/5 p-6" :fileId="editorStore.fileId" :setActive="activate"></TranscriptionList>
+    <TranscriptionList class="basis-2/5 p-6 max-h-[32rem] overflow-y-scroll" :fileId="editorStore.fileId"
+      :transcription-found="transcriptionFound" :setActive="activate"></TranscriptionList>
   </div>
 </template>
