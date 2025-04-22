@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import FileElement from '@/components/FileElement.vue'
 import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
+import Message from 'primevue/message';
 import { useUserStore } from '@/stores/user';
 import { fetchProjects } from '@/utils/projectCRUD';
 import { useRouter } from 'vue-router';
@@ -57,15 +58,16 @@ onMounted(async () => {
 <template>
   <Dialog :visible="dialogVisible" header="Создание проекта" :style="{ width: '25rem' }" :position="'top'" modal
     :draggable="false" :closable="false">
-    <span class="text-surface-500 dark:text-surface-400 block mb-8">Введите информацию о проекте.</span>
+    <span class="text-neutral-500 dark:text-neutral-400 block mb-8">Введите информацию о проекте.</span>
     <div class="flex items-center gap-4 mb-4">
       <label for="proj-name" class="font-semibold w-24">Название проекта</label>
       <InputText id="proj-name" class="flex-auto" autocomplete="off" v-model="editorStore.projectName" />
     </div>
-    <div class="flex items-center gap-4 mb-8">
+    <div class="flex items-center gap-4 mb-4">
       <label for="proj-description" class="font-semibold w-24">Краткое описание</label>
       <InputText id="proj-description" class="flex-auto" autocomplete="off" v-model="editorStore.projectDescription" />
     </div>
+    <Message class="mb-8" size="small" severity="secondary" variant="simple">Описание необязательно.</Message>
     <div class="flex justify-end gap-2">
       <Button type="button" label="Cancel" severity="secondary" @click="cancelProjectInit"></Button>
       <Button type="button" label="Save" @click="createProj"></Button>
