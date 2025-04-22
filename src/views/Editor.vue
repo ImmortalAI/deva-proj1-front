@@ -12,6 +12,8 @@ import { fetchProjectFiles } from "@/utils/projectCRUD";
 const route = useRoute();
 const editorStore = useEditorStore();
 
+const videoElement = ref<HTMLVideoElement | null>(null);
+
 const isUploaded = ref(false);
 const uploadProgress = ref(0);
 const transcriptionFound = ref(false);
@@ -51,19 +53,35 @@ const uploadFile = async (event: FileUploadUploaderEvent) => {
   }
 };
 
-// async function getVideoUrl() {
-//   try {
-//     const response = await axios.post<FileDownloadDataResponse[]>(`/api/file/get_download_urls`, [
-//       editorStore.fileId,
-//     ]);
-//     editorStore.fileDownloadUrl = `/api/file/download/${editorStore.fileId}` // (response.data[0].download_url as string).replace("minio", "localhost");
-//   } catch (e) {
-//     console.log(e); //FIXME
-//   }
-// }
+function setVideoTime(seconds: number) {
+  if (videoElement.value === null) {
+    console.warn('Видео элемент не найден.');
+    return
+  }
 
-const activate = () => console.log("activation");
+  if (typeof seconds !== 'number' || isNaN(seconds) || seconds < 0) {
+    console.warn('Некорректное значение времени:', seconds);
+    return;
+  }
 
+  if (isNaN(videoElement.value.duration)) {
+    videoElement.value.addEventListener('loadedmetadata', () => {
+      if(videoElement.value){
+        if (seconds > videoElement.value.duration) {
+        console.warn(`Указанное время превышает длительность видео (${videoElement.value.duration} секунд).`);
+        return;
+      }
+      videoElement.value.currentTime = seconds;
+    }
+    }, { once: true })
+  } else {
+    if (seconds > videoElement.value.duration) {
+      console.warn(`Указанное время превышает длительность видео (${videoElement.value.duration} секунд).`)
+      return
+    }
+    videoElement.value.currentTime = seconds
+  }
+}
 /* //////////////////////
 async function downloadFromUrl(url: string, filename: string): Promise<void> {
   try {
@@ -266,11 +284,11 @@ onBeforeUnmount(() => {
           <ProgressBar v-if="uploadProgress > 0" :value="uploadProgress"
             class="w-64 absolute bottom-4 left-1/2 transform -translate-x-1/2" />
         </div>
-        <video v-else :src="editorStore.fileDownloadUrl" controls class="w-full object-contain bg-black aspect-video" />
+        <video ref="videoElement" v-else :src="editorStore.fileDownloadUrl" controls class="w-full object-contain bg-black aspect-video" />
       </div>
     
       <TranscriptionList class="p-6 basis-2/5 h-full overflow-y-scroll flex-grow" :fileId="editorStore.fileId"
-        :transcription-found="transcriptionFound" :setActive="activate"></TranscriptionList>
+        :transcription-found="transcriptionFound" @set-video-timing="setVideoTime"></TranscriptionList>
     </div>
   </div>
 </template>
