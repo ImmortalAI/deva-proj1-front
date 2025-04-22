@@ -246,13 +246,13 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="w-full h-full box-border flex flex-col">
-    <div>
+  <div class="w-full h-full flex flex-col">
+    <div class="flex-none">
       <p class="p-2 text-2xl" @click="">{{ editorStore.projectName }}</p>
       <p class="p-2 text-sm">{{ getAnyDescription }}</p>
     </div>
-    <div class="w-full h-full box-border flex gap-4 p-4 flex-row">
-      <div class="relative basis-3/5 flex items-center justify-center">
+    <div class="w-full flex-1 flex gap-4 p-4 max-h-[80%]">
+      <div class="relative basis-3/5 flex justify-center items-start">
         <div v-if="!isUploaded && uploadProgress === 0" class="p-6 text-center">
           <FileUpload mode="basic" name="video" :auto="true" :customUpload="true" @uploader="uploadFile" accept="video/*"
             chooseLabel="" class="w-full">

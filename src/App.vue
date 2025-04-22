@@ -18,7 +18,7 @@ function handleAuth() {
 </script>
 
 <template>
-  <header class="flex justify-between items-center border-b-neutral-700 border-b-2">
+  <header class="flex justify-between items-center border-b-neutral-700 border-b-2 h-1/12">
     <span @click="router.push('/')" class="text-2xl m-2 ml-4 cursor-pointer">DEVA</span>
 
     <div @click="handleAuth()"
@@ -28,5 +28,7 @@ function handleAuth() {
     </div>
   </header>
 
-  <RouterView />
+  <div class="h-11/12">
+    <RouterView />
+  </div>
 </template>
