@@ -235,7 +235,6 @@ const changeProjectName = () => {
 onBeforeMount(async () => {
   try {
     const response = await fetchProjectFiles(route.params.id as string);
-    console.log(response);
     if (response && response.length > 0) {
       const mediaFile = response.find((file) => file.file_type.startsWith("video")) as FileDownloadDataResponse;
       editorStore.fileId = mediaFile.id;

@@ -30,7 +30,6 @@ const emits = defineEmits<{
 
 watch(() => props.transcriptionFound, () => {
     if (props.transcriptionFound) {
-        console.log("Ts found");
         editorStore.taskState = 'done';
         downloadTranscription();
     }
@@ -87,7 +86,6 @@ const downloadTranscription = async () => {
         response.data.forEach((item) => {
             transcriptionItems.value.push(item);
         });
-        console.log(transcriptionItems);
     }).catch((e) => {
         console.log(e); //FIXME
     });
