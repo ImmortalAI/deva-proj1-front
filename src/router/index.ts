@@ -43,12 +43,12 @@ const router = createRouter({
     },
     {
       path: "/edit/:id",
-      name: "edit",
-      component: () => import("../views/Transcriptor.vue"),
+      name: "editor",
+      component: () => import("../views/Editor.vue"),
       meta: {
         requiresAuth: true,
-      },
-    },
+      }, 
+    }
   ],
 });
 

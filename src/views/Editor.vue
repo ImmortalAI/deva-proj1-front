@@ -1,0 +1,186 @@
+<template>
+    <Tabs value="0">
+        <TabList>
+            <Tab value="0">
+                <i class="pi pi-wrench mr-2"></i>
+                <span>Транскрипция</span>
+            </Tab>
+            <Tab value="1">
+                <i class="pi pi-book mr-2"></i>
+                <span>Конспект</span>
+            </Tab>
+            <Tab value="2">
+                <i class="pi pi-images mr-2"></i>
+                <span>Кадры</span>
+            </Tab>
+        </TabList>
+        <TabPanels>
+            <TabPanel value="0">
+                <div class="flex h-[calc(100vh-10rem)]">
+                    <FileUpload v-if="!editor.isMediaFileUploaded" accept="video/*,audio/*" auto customUpload
+                        @uploader="customMediaUploader($event)" :maxFileSize="10737418240">
+                        <template #content>
+                            <div class="flex flex-wrap justify-between items-center flex-1 gap-4">
+                                <ProgressBar :value="uploadFileProgress" :showValue="false"
+                                    class="md:w-20rem h-1 w-full md:ml-auto">
+                                </ProgressBar>
+                            </div>
+                        </template>
+                        <template #empty>
+                            <div class="flex items-center justify-center flex-col">
+                                <i class="pi pi-cloud-upload !border-2 !rounded-full !p-8 !text-4xl" />
+                                <p class="mt-6 mb-0">Перетяни файлы сюда, чтобы загрузить их.</p>
+                            </div>
+                        </template>
+                    </FileUpload>
+                    <div v-else class="flex flex-col basis-3/5">
+                        <video ref="videoElement" :src="editor.mediaFileDlUrl" controls
+                            class="w-full grow object-contain bg-black aspect-video" />
+                        <Timeline :video-length="videoElement?.duration || 0" @move-pointer="setVideoTime" />
+                    </div>
+                    <TranscriptionList class="p-6 basis-2/5 h-full overflow-y-scrollx" :fileId="editor.mediaFileId"
+                        :transcription-found="transcriptionFound" @set-video-timing="setVideoTime"></TranscriptionList>
+                </div>
+            </TabPanel>
+            <TabPanel value="1">
+                <MdEditor v-model="editorText" previewOnly :theme="theming.isDark ? 'dark' : 'light'" language="ru" />
+            </TabPanel>
+            <TabPanel value="2">
+                <p>Nothing</p>
+            </TabPanel>
+        </TabPanels>
+    </Tabs>
+</template>
+
+<script setup lang="ts">
+// #region PrimeVue Imports
+import Tabs from 'primevue/tabs';
+import Tab from 'primevue/tab';
+import TabPanel from 'primevue/tabpanel';
+import TabPanels from 'primevue/tabpanels';
+import TabList from 'primevue/tablist';
+import FileUpload from 'primevue/fileupload';
+import ProgressBar from 'primevue/progressbar';
+import type { FileUploadUploaderEvent } from 'primevue';
+// #endregion
+// #region Libs Imports
+import { config, MdEditor } from 'md-editor-v3';
+import 'md-editor-v3/lib/style.css';
+import RU from '@vavt/cm-extension/dist/locale/ru'
+import { computed, onBeforeMount, onMounted, onUnmounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
+import axios, { type AxiosProgressEvent } from 'axios';
+// #endregion
+// #region Local Imports
+import TranscriptionList from '@/components/TranscriptionList.vue';
+import Timeline from '@/components/Timeline.vue';
+import { useTheme } from '@/composables/useTheme';
+import type { FileDownloadDataResponse, FileInfoResponse } from '@/models/fileScheme';
+import { useEditorStore } from '@/stores/editor';
+import { fetchProjectFiles } from '@/utils/projectCRUD';
+
+// #endregion
+
+const route = useRoute();
+const editor = useEditorStore();
+const theming = useTheme();
+
+const editorText = ref('');
+
+config({
+    editorConfig: {
+        languageUserDefined: {
+            'ru': RU
+        }
+    }
+});
+
+const transcriptionFound = ref(false);
+
+onBeforeMount(async () => {
+    try {
+        const response = await fetchProjectFiles(route.params.id as string);
+        if (response && response.length > 0) {
+            const mediaFile = response.find((file) => file.file_type.startsWith("video")) as FileDownloadDataResponse;
+            editor.mediaFileId = mediaFile.id;
+            editor.mediaFileName = mediaFile.name;
+            editor.mediaFileDlUrl = `/api/file/video/${editor.mediaFileId}`
+
+            const tsFile = response.find((file) => file.name === "transcript.json");
+            if (tsFile) {
+                const completeTask: FileInfoResponse = {
+                    id: tsFile.id,
+                    name: tsFile.name,
+                }
+                editor.taskResult.push(completeTask);
+                transcriptionFound.value = true;
+            }
+        }
+    } catch (e) {
+        console.log(e); //FIXME
+    }
+})
+
+onMounted(() => {
+    editor.projectId = route.params.id as string;
+})
+
+onUnmounted(() => {
+    editor.reset();
+})
+
+const uploadFileProgress = ref(0);
+
+async function customMediaUploader(event: FileUploadUploaderEvent) {
+    const file = Array.isArray(event.files) ? event.files[0] : event.files;
+    const formData = new FormData();
+    const projectId = route.params.id;
+
+    if (!file) return;
+
+    formData.append("file", file);
+    try {
+        const response = await axios.post<FileInfoResponse>("/api/file/upload", formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+            params: {
+                project_id: projectId,
+            },
+            onUploadProgress: (progressEvent: AxiosProgressEvent) => {
+                if (progressEvent.lengthComputable && progressEvent.total) {
+                    const percent = Math.round(progressEvent.loaded * 100 / progressEvent.total);
+                    uploadFileProgress.value = percent;
+                }
+                else {
+                    uploadFileProgress.value = 1;
+                }
+            }
+        });
+        editor.mediaFileId = response.data.id;
+        editor.mediaFileName = response.data.name;
+        editor.mediaFileDlUrl = `/api/file/video/${editor.mediaFileId}`
+    } catch (e) {
+        console.log(e); //FIXME
+    }
+}
+
+const videoElement = ref<HTMLVideoElement | null>(null);
+
+function setVideoTime(seconds: number) {
+    if (videoElement.value === null) {
+        console.warn('Видео элемент не найден.');
+        return
+    }
+
+    if (isNaN(videoElement.value.duration)) {
+        videoElement.value.addEventListener('loadedmetadata', () => {
+            if (videoElement.value) {
+                videoElement.value.currentTime = seconds;
+            }
+        }, { once: true });
+    } else {
+        videoElement.value.currentTime = seconds
+    }
+}
+</script>

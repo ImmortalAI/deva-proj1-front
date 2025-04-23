@@ -1,3 +1,28 @@
+<template>
+    <div class="bg-neutral-800">
+        <div v-if="editorStore.taskState !== 'done'" class="w-full h-full flex items-center justify-center">
+            <Button v-if="editorStore.taskState === 'not_started'"
+                @click="createTask({ file_id: props.fileId, task_type: 'transcribe' })"
+                class="w-fit h-fit p-0 rounded-full">Транскрибировать</Button>
+            <p v-else>{{ editorStore.taskProgressPercentage }}%</p>
+        </div>
+        <div v-else class="h-full">
+            <ScrollPanel style="width: 100%; height: 100%">
+                <template v-for="item, ind in transcriptionItems">
+                    <div :class="[{ 'bg-neutral-900': ind % 2 === 1 }]" class="p-2">
+                        <div class="text-xs text-violet-600 flex flex-row gap-1">
+                            <p @click="emits('setVideoTiming', parseFloat(item.start))" class="hover:text-violet-500 hover:cursor-pointer">{{ timeConverter(item.start) }}</p>
+                            <p>-</p>
+                            <p @click="emits('setVideoTiming', parseFloat(item.end))" class="hover:text-violet-500 cursor-pointer">{{ timeConverter(item.end) }}</p>
+                        </div>
+                        <p class="text-neutral-50">{{ item.text }}</p>
+                    </div>
+                </template>
+            </ScrollPanel>
+        </div>
+    </div>
+</template>
+
 <script setup lang="ts">
 import type { FileFullInfoResponse, FileInfoResponse, TimecodeFile } from '@/models/fileScheme';
 import { useEditorStore } from '@/stores/editor';
@@ -91,28 +116,3 @@ const downloadTranscription = async () => {
     });
 }
 </script>
-
-<template>
-    <div class="bg-neutral-800">
-        <div v-if="editorStore.taskState !== 'done'" class="w-full h-full flex items-center justify-center">
-            <Button v-if="editorStore.taskState === 'not_started'"
-                @click="createTask({ file_id: props.fileId, task_type: 'transcribe' })"
-                class="w-fit h-fit p-0 rounded-full">Транскрибировать</Button>
-            <p v-else>{{ editorStore.taskProgressPercentage }}%</p>
-        </div>
-        <div v-else class="h-full">
-            <ScrollPanel style="width: 100%; height: 100%">
-                <template v-for="item, ind in transcriptionItems">
-                    <div :class="[{ 'bg-neutral-900': ind % 2 === 1 }]" class="p-2">
-                        <div class="text-xs text-violet-600 flex flex-row gap-1">
-                            <p @click="emits('setVideoTiming', parseFloat(item.start))" class="hover:text-violet-500 hover:cursor-pointer">{{ timeConverter(item.start) }}</p>
-                            <p>-</p>
-                            <p @click="emits('setVideoTiming', parseFloat(item.end))" class="hover:text-violet-500 cursor-pointer">{{ timeConverter(item.end) }}</p>
-                        </div>
-                        <p class="text-neutral-50">{{ item.text }}</p>
-                    </div>
-                </template>
-            </ScrollPanel>
-        </div>
-    </div>
-</template>

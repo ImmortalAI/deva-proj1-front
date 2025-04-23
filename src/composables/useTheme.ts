@@ -13,7 +13,6 @@ export function useTheme() {
     function applyTheme(dark: boolean) {
       document.documentElement.classList.toggle(DARK_CLASS, dark)
       localStorage.setItem(THEME_KEY, dark ? 'dark' : 'light')
-      isDark.value = dark
     }
     
     applyTheme(isDark.value)
