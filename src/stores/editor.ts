@@ -2,15 +2,17 @@ import { useSSE } from "@/composables/useSSE";
 import type { FileInfoResponse } from "@/models/fileScheme";
 import type { TaskStatus } from "@/models/taskScheme";
 import { defineStore } from "pinia";
-import { reactive, ref } from "vue";
+import { computed, reactive, ref } from "vue";
 
 export const useEditorStore = defineStore("editor", () => {
+  const projectId = ref("");
   const projectName = ref("");
   const projectDescription = ref("");
 
-  const fileId = ref("");
-  const fileName = ref("");
-  const fileDownloadUrl = ref("");
+  const mediaFileId = ref("");
+  const mediaFileName = ref("");
+  const mediaFileDlUrl = ref("");
+  const isMediaFileUploaded = computed(() => mediaFileId.value !== "");
 
   const taskId = ref("");
   const taskState = ref<TaskStatus>("not_started");
@@ -19,12 +21,13 @@ export const useEditorStore = defineStore("editor", () => {
 
   const sse = useSSE();
   function reset() {
+    projectId.value = "";
     projectName.value = "";
     projectDescription.value = "";
 
-    fileId.value = "";
-    fileName.value = "";
-    fileDownloadUrl.value = "";
+    mediaFileId.value = "";
+    mediaFileName.value = "";
+    mediaFileDlUrl.value = "";
 
     if (taskState.value === "in_progress") {
       sse.sseDisconnect();
@@ -36,11 +39,13 @@ export const useEditorStore = defineStore("editor", () => {
   }
 
   return {
+    projectId,
     projectName,
     projectDescription,
-    fileId,
-    fileName,
-    fileDownloadUrl,
+    mediaFileId,
+    mediaFileName,
+    mediaFileDlUrl,
+    isMediaFileUploaded,
     taskId,
     taskState,
     taskProgressPercentage,
