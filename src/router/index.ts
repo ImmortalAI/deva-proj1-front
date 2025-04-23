@@ -54,7 +54,9 @@ const router = createRouter({
 
 router.beforeEach( async (to) => {
   const user = useUserStore();
-  await user.fetchUserData();
+  if(await user.fetchUserData()) {
+    return { name: "home" };
+  };
   if (to.meta.requiresGuest && user.isAuthenticated) {
     return { name: "home" };
   } else if (to.meta.requiresAuth && !user.isAuthenticated)
