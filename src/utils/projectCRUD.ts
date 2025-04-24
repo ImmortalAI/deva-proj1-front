@@ -1,15 +1,20 @@
-import type { FileDownloadDataResponse, FileInfoResponse } from "@/models/fileSchema";
+import type { FileDownloadDataResponse } from "@/models/fileSchema";
 import type {
   ProjectCreateRequest,
+  ProjectCreateResponse,
+  ProjectDeleteResponse,
+  ProjectGetAllFilesResponse,
   ProjectInfoResponse,
+  ProjectListResponse,
   ProjectPatchRequest,
+  ProjectPatchResponse,
 } from "@/models/projectSchema";
 import { useUserStore } from "@/stores/user";
 import axios from "axios";
 
 export async function createProject(createRequest: ProjectCreateRequest) {
   try {
-    const response = await axios.post<ProjectInfoResponse>(
+    const response = await axios.post<ProjectCreateResponse>(
       "/api/project/create",
       createRequest
     );
@@ -21,7 +26,7 @@ export async function createProject(createRequest: ProjectCreateRequest) {
 
 export async function deleteProject(id: string) {
   try {
-    await axios.delete(`/api/project`, {
+    await axios.delete<ProjectDeleteResponse>(`/api/project`, {
       params: {
         project_id: id,
       },
@@ -33,7 +38,7 @@ export async function deleteProject(id: string) {
 
 export async function patchProject(patchRequest: ProjectPatchRequest) {
   try {
-    await axios.patch(`/api/project`, patchRequest);
+    await axios.patch<ProjectPatchResponse>(`/api/project`, patchRequest);
   } catch (e) {
     console.log(e); //FIXME
   }
@@ -41,7 +46,7 @@ export async function patchProject(patchRequest: ProjectPatchRequest) {
 
 export async function fetchProjects() {
   try {
-    const response = await axios.get<ProjectInfoResponse[]>(
+    const response = await axios.get<ProjectListResponse>(
       "/api/project/list"
     );
     return response.data;
@@ -53,8 +58,8 @@ export async function fetchProjects() {
 export async function fetchProjectFiles(id: string) {
   const userStore = useUserStore();
   try {
-    const response = await axios.get<FileDownloadDataResponse[]>(
-      `/api/project/get_files/${id}`
+    const response = await axios.get<ProjectGetAllFilesResponse>(
+      `/api/project/get_all_files/${id}`
     );
     return response.data;
   } catch (e) {

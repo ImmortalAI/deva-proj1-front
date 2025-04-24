@@ -50,7 +50,7 @@ import { useUserStore } from '@/stores/user';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { FloatLabel, InputGroup, InputGroupAddon, InputText, Button } from 'primevue';
-import type { AuthLoginRequest } from '@/models/authSchema';
+import type { AuthLoginResponse, AuthLoginRequest } from '@/models/authSchema';
 import axios from 'axios';
 
 const router = useRouter();
@@ -66,7 +66,7 @@ async function login() {
   }
 
   try {
-    await axios.post("/api/auth/login", request);
+    await axios.post<AuthLoginResponse>("/api/auth/login", request);
     await userStore.fetchUserData();
     router.push("/");
   } catch (e) {

@@ -62,7 +62,7 @@ import { useUserStore } from '@/stores/user';
 import { ref } from 'vue';
 import { RouterLink, useRouter } from 'vue-router'
 import { FloatLabel, InputGroup, InputGroupAddon, InputText, Button } from 'primevue';
-import type { RegisterRequest } from '@/models/authSchema';
+import type { AuthRegisterResponse, RegisterRequest } from '@/models/authSchema';
 import type { ErrorResponse } from '@/models/errorSchema';
 import axios from 'axios';
 
@@ -87,7 +87,7 @@ async function register() {
   }
 
   try {
-    await axios.post("/api/auth/register", request);
+    await axios.post<AuthRegisterResponse>("/api/auth/register", request);
     router.push("/login");
   } catch (e) {
     if (axios.isAxiosError(e) && e.response?.status === 401) {
