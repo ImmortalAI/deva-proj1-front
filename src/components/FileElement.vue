@@ -32,8 +32,6 @@ const divElement = ref<HTMLDivElement | null>(null)
 const toRef = computed(() => `/edit/${props.idFile}`)
 
 const openProject = () => {
-    editorStore.projectName = props.nameFile;
-    editorStore.projectDescription = props.descriptionFile;
     router.push(`/edit/${props.idFile}`);
 }
 </script>

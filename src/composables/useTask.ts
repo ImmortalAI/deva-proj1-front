@@ -55,18 +55,9 @@ export function useTask() {
         if (newValue.length === (subtaskCount.value + 1) && newValue.every((task) => task.done)) {
             editor.taskState = "done";
             sse.disconnect();
-            fetchProjectFiles();
+            await editor.load_project_data(editor.project_id);
         }
     })
-
-    async function fetchProjectFiles() {
-        await fetchProjectData(editor.projectId).then((projectData) => {
-            if (!projectData) return;
-            editor.projectTranscriptionFileId = projectData.transcription_file_id;
-            editor.projectSummaryFileId = projectData.summary_file_id;
-            editor.projectFramesExtractDone = projectData.frames_extract_done;
-        })
-    }
 
     return {
         createTask,
