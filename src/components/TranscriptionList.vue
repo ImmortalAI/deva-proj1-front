@@ -26,14 +26,14 @@
 </template>
 
 <script setup lang="ts">
-import type { FileFullInfoResponse, FileInfoResponse, TimecodeFile } from '@/models/fileScheme';
+import type { FileInfoResponse, TimecodeFile } from '@/models/fileSchema';
 import { useEditorStore } from '@/stores/editor';
 
-import { onBeforeMount, onMounted, reactive, ref, watch, type PropType } from 'vue';
+import { ref, watch} from 'vue';
 import Button from 'primevue/button';
 import axios from 'axios';
 import { useSSE } from '@/composables/useSSE';
-import type { TaskCreateRequest, TaskCreateResponse } from '@/models/taskScheme';
+import type { TaskCreateRequest, TaskCreateResponse } from '@/models/taskSchema';
 import timeConverter from '@/utils/timeConverter';
 import ScrollPanel from 'primevue/scrollpanel';
 

@@ -1,9 +1,9 @@
-import type { FileDownloadDataResponse, FileInfoResponse } from "@/models/fileScheme";
+import type { FileDownloadDataResponse, FileInfoResponse } from "@/models/fileSchema";
 import type {
   ProjectCreateRequest,
   ProjectInfoResponse,
   ProjectPatchRequest,
-} from "@/models/projectScheme";
+} from "@/models/projectSchema";
 import { useUserStore } from "@/stores/user";
 import axios from "axios";
 

@@ -1,6 +1,6 @@
 import { useSSE } from "@/composables/useSSE";
-import type { FileInfoResponse } from "@/models/fileScheme";
-import type { TaskStatus } from "@/models/taskScheme";
+import type { FileInfoResponse } from "@/models/fileSchema";
+import type { TaskStatus } from "@/models/taskSchema";
 import { defineStore } from "pinia";
 import { computed, reactive, ref } from "vue";
 

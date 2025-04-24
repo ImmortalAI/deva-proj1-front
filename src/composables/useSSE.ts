@@ -1,4 +1,4 @@
-import type { TaskSSEResponse } from "@/models/taskScheme";
+import type { TaskSSEResponse } from "@/models/taskSchema";
 import { ref, onBeforeUnmount } from "vue";
 
 export function useSSE() {

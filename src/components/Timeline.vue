@@ -1,5 +1,23 @@
+<template>
+  <div class="flex flex-col p-4 items-center">
+    <div class="flex items-center gap-4 w-full">
+      <!-- Start Time Input -->
+      <InputMask id="timeStart" v-model="startStr" mask="99:99:99" :placeholder="numberToTimeStr(0)"
+        class="p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-28" />
+      <!-- Slider -->
+      <Slider v-model="pointer" :min="rawStart" :max="rawEnd" class="flex-1" />
+      <!-- End Time Input -->
+      <InputMask id="timeEnd" v-model="endStr" mask="99:99:99"
+        :placeholder="numberToTimeStr(props.videoElementRef?.duration || 0)"
+        class="p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-28" />
+    </div>
+    <!-- Current time display -->
+    <p class="mt-2 text-sm">{{ currentTimeStr }}</p>
+  </div>
+</template>
+
 <script setup lang="ts">
-import { computed, ref, watch, watchEffect } from 'vue';
+import { computed, ref, watch } from 'vue';
 import Slider from 'primevue/slider';
 import InputMask from 'primevue/inputmask';
 
@@ -112,23 +130,3 @@ watch(endStr, (newVal) => {
   endStr.value = lastValidEnd.value;
 });
 </script>
-
-<template>
-  <div class="flex flex-col p-4 items-center">
-    <div class="flex items-center gap-4 w-full">
-      <!-- Start Time Input -->
-      <InputMask id="timeStart" v-model="startStr" mask="99:99:99" :placeholder="numberToTimeStr(0)"
-        class="p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-28" />
-      <!-- Slider -->
-      <Slider v-model="pointer" :min="rawStart" :max="rawEnd" class="flex-1" />
-      <!-- End Time Input -->
-      <InputMask id="timeEnd" v-model="endStr" mask="99:99:99"
-        :placeholder="numberToTimeStr(props.videoElementRef?.duration || 0)"
-        class="p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-28" />
-    </div>
-    <!-- Current time display -->
-    <p class="mt-2 text-sm">{{ currentTimeStr }}</p>
-  </div>
-</template>
-
-<style scoped></style>

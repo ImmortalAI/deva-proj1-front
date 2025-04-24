@@ -1,7 +1,12 @@
+<template>
+    <div ref="divElement" class="w-full p-2 border-2 border-violet-900 rounded-2xl">
+        <a href="#" @click.prevent="openProject" class="block w-full"><span
+                class="text-center block w-full">{{ props.nameFile }}</span></a>
+    </div>
+</template>
+
 <script lang="ts" setup>
-import type { ProjectCreateRequest } from '@/models/projectScheme';
 import { useEditorStore } from '@/stores/editor';
-import { createProject } from '@/utils/projectCRUD';
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -32,10 +37,3 @@ const openProject = () => {
     router.push(`/edit/${props.idFile}`);
 }
 </script>
-
-<template>
-    <div ref="divElement" class="w-full p-2 border-2 border-violet-900 rounded-2xl">
-        <a href="#" @click.prevent="openProject" class="block w-full"><span
-                class="text-center block w-full">{{ props.nameFile }}</span></a>
-    </div>
-</template>

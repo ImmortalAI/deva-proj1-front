@@ -82,7 +82,7 @@ import axios, { type AxiosProgressEvent } from 'axios';
 import TranscriptionList from '@/components/TranscriptionList.vue';
 import Timeline from '@/components/Timeline.vue';
 import { useTheme } from '@/composables/useTheme';
-import type { FileDownloadDataResponse, FileInfoResponse } from '@/models/fileScheme';
+import type { FileDownloadDataResponse, FileInfoResponse } from '@/models/fileSchema';
 import { useEditorStore } from '@/stores/editor';
 import { fetchProjectFiles } from '@/utils/projectCRUD';
 

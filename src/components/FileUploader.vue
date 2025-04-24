@@ -1,3 +1,14 @@
+<template>
+    <div>
+        <input type="file" ref="fileInput" :accept="mime_types" class="hidden" @change="handleFileUpload">
+
+        <button type="button" @click="triggerFileInput"
+            class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
+            <slot>Выбрать файл</slot>
+        </button>
+    </div>
+</template>
+
 <script setup lang="ts" generic="T extends File | null">
 import { ref, type PropType } from 'vue';
 
@@ -48,14 +59,3 @@ const resetInput = () => {
     }
 }
 </script>
-
-<template>
-    <div>
-        <input type="file" ref="fileInput" :accept="mime_types" class="hidden" @change="handleFileUpload">
-
-        <button type="button" @click="triggerFileInput"
-            class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
-            <slot>Выбрать файл</slot>
-        </button>
-    </div>
-</template>

@@ -1,15 +1,3 @@
-<script setup lang="ts">
-import FileUploader from '@/components/FileUploader.vue';
-
-const videoHandler = (videoFile: File | null) => {
-    
-}
-
-const audioHandler = (audioFile: File | null) => {
-    
-}
-</script>
-
 <template>
     <div>
         <p>Загрузить...</p>
@@ -22,3 +10,15 @@ const audioHandler = (audioFile: File | null) => {
         </div>
     </div>
 </template>
+
+<script setup lang="ts">
+import FileUploader from '@/components/FileUploader.vue';
+
+const videoHandler = (videoFile: File | null) => {
+    
+}
+
+const audioHandler = (audioFile: File | null) => {
+    
+}
+</script>

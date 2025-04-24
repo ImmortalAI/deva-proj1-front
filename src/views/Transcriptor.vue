@@ -3,7 +3,7 @@ import { ref, onBeforeUnmount, onBeforeMount, computed } from "vue";
 import FileUpload, { type FileUploadUploaderEvent } from "primevue/fileupload";
 import ProgressBar from "primevue/progressbar";
 import { useRoute } from "vue-router";
-import type { FileDownloadDataResponse, FileInfoResponse } from "@/models/fileScheme";
+import type { FileDownloadDataResponse, FileInfoResponse } from "@/models/fileSchema";
 import TranscriptionList from "@/components/TranscriptionList.vue";
 import { useEditorStore } from "@/stores/editor";
 import axios, { type AxiosProgressEvent } from "axios";

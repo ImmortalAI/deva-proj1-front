@@ -1,38 +1,3 @@
-<script setup lang="ts">
-import { useUserStore } from '@/stores/user';
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { FloatLabel, InputGroup, InputGroupAddon, InputText, Button } from 'primevue';
-import type { LoginUserRequest } from '@/models/userScheme';
-import axios from 'axios';
-
-const router = useRouter();
-const userStore = useUserStore();
-const username = ref();
-const password = ref();
-const isFailed = ref(false);
-
-async function login() {
-  const request: LoginUserRequest = {
-    login: username.value,
-    password: password.value
-  }
-
-  try {
-    await axios.post("/api/auth/login", request);
-    await userStore.fetchUserData();
-    router.push("/");
-  } catch (e) {
-    if (axios.isAxiosError(e) && e.response?.status === 401) {
-      isFailed.value = true;
-      password.value = '';
-    } else {
-      console.log(e); //FIXME
-    }
-  }
-}
-</script>
-
 <template>
   <div class="flex items-center justify-center min-h-screen">
     <div class="p-6 rounded-xl w-full max-w-sm border">
@@ -79,3 +44,38 @@ async function login() {
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import { useUserStore } from '@/stores/user';
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { FloatLabel, InputGroup, InputGroupAddon, InputText, Button } from 'primevue';
+import type { AuthLoginRequest } from '@/models/authSchema';
+import axios from 'axios';
+
+const router = useRouter();
+const userStore = useUserStore();
+const username = ref();
+const password = ref();
+const isFailed = ref(false);
+
+async function login() {
+  const request: AuthLoginRequest = {
+    login: username.value,
+    password: password.value
+  }
+
+  try {
+    await axios.post("/api/auth/login", request);
+    await userStore.fetchUserData();
+    router.push("/");
+  } catch (e) {
+    if (axios.isAxiosError(e) && e.response?.status === 401) {
+      isFailed.value = true;
+      password.value = '';
+    } else {
+      console.log(e); //FIXME
+    }
+  }
+}
+</script>
