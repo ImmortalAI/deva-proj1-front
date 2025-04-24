@@ -40,10 +40,14 @@ export function useTask() {
     };
 
     watch(sse.data, (newValue) => {
+        console.log("Found new data:", newValue);
+        
         if(newValue === null) return; 
         const subtaskIndex = editor.taskData.findIndex((task) => task.id === newValue.id);
         if (subtaskIndex !== -1) {
             editor.taskData[subtaskIndex] = newValue;
+        } else {
+            editor.taskData.push(newValue);
         }
     })
 
