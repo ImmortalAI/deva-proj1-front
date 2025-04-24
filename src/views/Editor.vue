@@ -17,26 +17,32 @@
         <TabPanels>
             <TabPanel value="0">
                 <div class="flex h-[calc(100vh-10rem)]">
-                    <FileUpload v-if="!editor.isMediaFileUploaded" accept="video/*,audio/*" auto customUpload
-                        @uploader="customMediaUploader($event)" :maxFileSize="10737418240">
-                        <template #content>
-                            <div class="flex flex-wrap justify-between items-center flex-1 gap-4">
-                                <ProgressBar :value="uploadFileProgress" :showValue="false"
-                                    class="md:w-20rem h-1 w-full md:ml-auto">
-                                </ProgressBar>
-                            </div>
-                        </template>
-                        <template #empty>
-                            <div class="flex items-center justify-center flex-col">
-                                <i class="pi pi-cloud-upload !border-2 !rounded-full !p-8 !text-4xl" />
-                                <p class="mt-6 mb-0">Перетяни файлы сюда, чтобы загрузить их.</p>
-                            </div>
-                        </template>
-                    </FileUpload>
-                    <div v-else class="flex flex-col basis-3/5">
-                        <video ref="videoElement" :src="editor.mediaFileDlUrl" controls
-                            class="w-full grow object-contain bg-black aspect-video" />
-                        <Timeline :video-length="videoElement?.duration || 0" @move-pointer="setVideoTime" />
+                    <div class="basis-3/5 p-2">
+                        <FileUpload v-if="!editor.isMediaFileUploaded" accept="video/*,audio/*" auto customUpload
+                            @uploader="customMediaUploader($event)" :maxFileSize="10737418240">
+                            <template #header="{ chooseCallback }">
+                                <Button class="w-full" @click="chooseCallback">Выбрать файл</Button>
+                            </template>
+                            <template #content>
+                                <div class="flex flex-wrap justify-between items-center flex-1 gap-4">
+                                    <ProgressBar :value="uploadFileProgress" :showValue="false"
+                                        class="md:w-20rem h-1 w-full md:ml-auto">
+                                    </ProgressBar>
+                                </div>
+                            </template>
+                            <template #empty>
+                                <div class="flex items-center justify-center flex-col">
+                                    <i class="pi pi-cloud-upload !border-2 !rounded-full !p-8 !text-4xl" />
+                                    <p class="mt-6 mb-0">Перетяни файлы сюда, чтобы загрузить их.</p>
+                                </div>
+                            </template>
+                        </FileUpload>
+                        <div v-else class="flex flex-col">
+                            <video ref="videoElement" :src="editor.mediaFileDlUrl" controls
+                                class="w-full grow object-contain bg-black aspect-video" />
+                            <!-- <audio :src="editor.mediaFileDlUrl"></audio> -->
+                            <Timeline :video-element-ref="videoElement" />
+                        </div>
                     </div>
                     <TranscriptionList class="p-6 basis-2/5 h-full overflow-y-scrollx" :fileId="editor.mediaFileId"
                         :transcription-found="transcriptionFound" @set-video-timing="setVideoTime"></TranscriptionList>
@@ -61,13 +67,14 @@ import TabPanels from 'primevue/tabpanels';
 import TabList from 'primevue/tablist';
 import FileUpload from 'primevue/fileupload';
 import ProgressBar from 'primevue/progressbar';
+import Button from 'primevue/button';
 import type { FileUploadUploaderEvent } from 'primevue';
 // #endregion
 // #region Libs Imports
 import { config, MdEditor } from 'md-editor-v3';
 import 'md-editor-v3/lib/style.css';
 import RU from '@vavt/cm-extension/dist/locale/ru'
-import { computed, onBeforeMount, onMounted, onUnmounted, ref } from 'vue';
+import { computed, onBeforeMount, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import axios, { type AxiosProgressEvent } from 'axios';
 // #endregion

@@ -1,7 +1,7 @@
 <template>
     <div class="bg-neutral-800">
         <div v-if="editorStore.taskState !== 'done'" class="w-full h-full flex items-center justify-center">
-            <Button v-if="editorStore.taskState === 'not_started'"
+            <Button v-if="editorStore.taskState === 'not_started'" :disabled="editorStore.mediaFileId === ''"
                 @click="createTask({ file_id: props.fileId, task_type: 'transcribe' })"
                 class="w-fit h-fit p-0 rounded-full">Транскрибировать</Button>
             <p v-else>{{ editorStore.taskProgressPercentage }}%</p>
@@ -11,9 +11,11 @@
                 <template v-for="item, ind in transcriptionItems">
                     <div :class="[{ 'bg-neutral-900': ind % 2 === 1 }]" class="p-2">
                         <div class="text-xs text-violet-600 flex flex-row gap-1">
-                            <p @click="emits('setVideoTiming', parseFloat(item.start))" class="hover:text-violet-500 hover:cursor-pointer">{{ timeConverter(item.start) }}</p>
+                            <p @click="emits('setVideoTiming', parseFloat(item.start))"
+                                class="hover:text-violet-500 hover:cursor-pointer">{{ timeConverter(item.start) }}</p>
                             <p>-</p>
-                            <p @click="emits('setVideoTiming', parseFloat(item.end))" class="hover:text-violet-500 cursor-pointer">{{ timeConverter(item.end) }}</p>
+                            <p @click="emits('setVideoTiming', parseFloat(item.end))"
+                                class="hover:text-violet-500 cursor-pointer">{{ timeConverter(item.end) }}</p>
                         </div>
                         <p class="text-neutral-50">{{ item.text }}</p>
                     </div>
@@ -50,7 +52,7 @@ const props = defineProps({
 })
 
 const emits = defineEmits<{
-        (e: "setVideoTiming", time: number): void
+    (e: "setVideoTiming", time: number): void
 }>();
 
 watch(() => props.transcriptionFound, () => {
