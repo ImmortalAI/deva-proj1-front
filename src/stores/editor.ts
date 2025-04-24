@@ -21,7 +21,7 @@ export const useEditorStore = defineStore("editor", () => {
   const mediaFileCreatedDate = ref("");
   const mediaFileLastModifiedDate = ref("");
   const mediaFileDlUrl = computed(
-    () => `/api/file/video/${mediaFileId.value}/${mediaFileMIMEType.value}`
+    () => `/api/file/video/${mediaFileId.value}`
   );
   const isMediaFileUploaded = computed(() => mediaFileId.value !== "");
 
