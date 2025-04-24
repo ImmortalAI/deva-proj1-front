@@ -1,10 +1,10 @@
 <template>
     <div class="bg-neutral-800">
-        <div v-if="editorStore.taskState !== 'done'" class="w-full h-full flex items-center justify-center">
+        <div v-if="!editorStore.isTranscriptionFileExist" class="w-full h-full flex items-center justify-center">
             <Button v-if="editorStore.taskState === 'not_started'" :disabled="editorStore.mediaFileId === ''"
-                @click="createTask({ file_id: props.fileId, task_type: 'transcribe' })"
+                @click="tasks.createTask({ project_id: editorStore.projectId, task_type: 'transcribe', prompt: '' })"
                 class="w-fit h-fit p-0 rounded-full">Транскрибировать</Button>
-            <p v-else>{{ editorStore.taskProgressPercentage }}%</p>
+            <p v-else>{{ tasks.totalTaskProgress }}%</p>
         </div>
         <div v-else class="h-full">
             <ScrollPanel style="width: 100%; height: 100%">
@@ -29,87 +29,53 @@
 import type { FileInfoResponse, TimecodeFile } from '@/models/fileSchema';
 import { useEditorStore } from '@/stores/editor';
 
-import { ref, watch} from 'vue';
+import { ref, watch } from 'vue';
 import Button from 'primevue/button';
 import axios from 'axios';
 import { useSSE } from '@/composables/useSSE';
 import type { TaskCreateRequest, TaskCreateResponse } from '@/models/taskSchema';
 import timeConverter from '@/utils/timeConverter';
 import ScrollPanel from 'primevue/scrollpanel';
+import { useTask } from '@/composables/useTask';
+import { fetchProjectFiles } from '@/utils/projectCRUD';
 
 const editorStore = useEditorStore();
 const sse = useSSE();
+const tasks = useTask();
 
-const props = defineProps({
-    fileId: {
-        type: String,
-        required: true,
-    },
-    transcriptionFound: {
-        type: Boolean,
-        required: false,
-    }
-})
+const transcriptionItems = ref<TimecodeFile[]>([]);
 
 const emits = defineEmits<{
     (e: "setVideoTiming", time: number): void
 }>();
 
-watch(() => props.transcriptionFound, () => {
-    if (props.transcriptionFound) {
-        editorStore.taskState = 'done';
-        downloadTranscription();
+watch(() => editorStore.transcriptionFileId, async (newValue, oldValue) => {
+    if (oldValue === '' && newValue !== '') {
+        await downloadTranscription();
     }
 })
 
-const createTask = async (taskCR: TaskCreateRequest) => {
-    if (editorStore.taskState !== "not_started") {
-        console.error("Task already in progress");
-        return;
+watch(() => editorStore.projectTranscriptionFileId, async (newValue, oldValue) => {
+    if (oldValue === '' && newValue !== '') {
+        await downloadTranscription();
     }
+})
 
-    try {
-        const response = await axios.post<TaskCreateResponse>(
-            "/api/task/create",
-            {},
-            {
-                params: taskCR,
-            }
-        );
-        editorStore.taskId = response.data.task_id;
-        sse.sseConnect(`/api/sse/${editorStore.taskId}`);
-        editorStore.taskState = "in_progress";
-    } catch (e) {
-        console.log(e); //FIXME
-    }
-};
-
-watch(sse.sseData, async (newValue) => {
-    if (newValue === null) return;
-    if (newValue.done) {
-        try {
-            const response = await axios.get<FileInfoResponse[]>(
-                `/api/task/get/${editorStore.taskId}`
-            );
-            response.data.forEach((file) => {
-                editorStore.taskResult.push(file);
-            });
-            editorStore.taskState = "done";
-            sse.sseDisconnect();
-            await downloadTranscription();
-        } catch (e) {
-            console.log(e); //FIXME
-        }
-    } else {
-        editorStore.taskProgressPercentage = (
-            parseFloat(newValue.status ?? "0") * 100
-        ).toFixed(0);
-    }
-});
-
-const transcriptionItems = ref<TimecodeFile[]>([]);
 const downloadTranscription = async () => {
-    await axios.get<TimecodeFile[]>(`/api/file/download/${editorStore.taskResult[0].id}`).then((response) => {
+    if (editorStore.transcriptionFileId === '') {
+        await fetchProjectFiles(editorStore.projectId).then((response) => {
+            if (!response) return;
+            const transcriptionFile = response.find((file) => file.id === editorStore.projectTranscriptionFileId);
+            if (transcriptionFile) {
+                editorStore.transcriptionFileId = transcriptionFile.id;
+                editorStore.transcriptionFileName = transcriptionFile.file_name;
+                editorStore.transcriptionFileMIMEType = transcriptionFile.file_type;
+                editorStore.transcriptionFileCreatedDate = transcriptionFile.created_date;
+                editorStore.transcriptionFileLastModifiedDate = transcriptionFile.last_modified_date;
+            }
+        })
+    }
+    await axios.get<TimecodeFile[]>(`/api/file/download/${editorStore.transcriptionFileId}`).then((response) => {
         response.data.forEach((item) => {
             transcriptionItems.value.push(item);
         });

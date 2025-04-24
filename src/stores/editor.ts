@@ -1,6 +1,5 @@
 import { useSSE } from "@/composables/useSSE";
-import type { FileInfoResponse } from "@/models/fileSchema";
-import type { TaskStatus } from "@/models/taskSchema";
+import type { TaskSSEResponse, TaskTypes, TaskStatus } from "@/models/taskSchema";
 import { defineStore } from "pinia";
 import { computed, reactive, ref } from "vue";
 
@@ -36,8 +35,8 @@ export const useEditorStore = defineStore("editor", () => {
 
   const taskId = ref("");
   const taskState = ref<TaskStatus>("not_started");
-  const taskProgressPercentage = ref("");
-  const taskResult = reactive<FileInfoResponse[]>([]);
+  const taskType = ref<TaskTypes | null>(null);
+  const taskData = reactive<TaskSSEResponse[]>([]);
 
   const sse = useSSE();
   function reset() {
@@ -64,12 +63,12 @@ export const useEditorStore = defineStore("editor", () => {
     transcriptionFileLastModifiedDate.value = "";
 
     if (taskState.value === "in_progress") {
-      sse.sseDisconnect();
+      sse.disconnect();
     }
     taskId.value = "";
     taskState.value = "not_started";
-    taskProgressPercentage.value = "";
-    taskResult.length = 0;
+    taskType.value = null;
+    taskData.length = 0;
   }
 
   return {
@@ -97,8 +96,8 @@ export const useEditorStore = defineStore("editor", () => {
     isTranscriptionFileExist,
     taskId,
     taskState,
-    taskProgressPercentage,
-    taskResult,
+    taskType,
+    taskData,
     reset,
   };
 });

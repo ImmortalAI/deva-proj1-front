@@ -72,7 +72,7 @@ import type { FileUploadUploaderEvent } from 'primevue';
 import { config, MdEditor } from 'md-editor-v3';
 import 'md-editor-v3/lib/style.css';
 import RU from '@vavt/cm-extension/dist/locale/ru'
-import { computed, onBeforeMount, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, onBeforeMount, onMounted, onUnmounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios, { type AxiosProgressEvent } from 'axios';
 // #endregion
@@ -84,7 +84,6 @@ import { useTheme } from '@/composables/useTheme';
 import type { FileData, FileDownloadDataResponse, FileInfoResponse, FileUploadResponse } from '@/models/fileSchema';
 import { useEditorStore } from '@/stores/editor';
 import { fetchProjectData, fetchProjectFiles } from '@/utils/projectCRUD';
-import { VideoPlayer } from '@videojs-player/vue';
 
 // #endregion
 
