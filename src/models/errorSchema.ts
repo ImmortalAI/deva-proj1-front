@@ -33,3 +33,7 @@ export type ProjectGetAllFilesError = ErrorResponse;
 
 export type ProjectListError = ErrorResponse;
 // #endregion
+
+// #region File Errors
+export type FileUploadError = ErrorResponse;
+// #endregion

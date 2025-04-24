@@ -8,11 +8,31 @@ export const useEditorStore = defineStore("editor", () => {
   const projectId = ref("");
   const projectName = ref("");
   const projectDescription = ref("");
+  const projectCreatedDate = ref("");
+  const projectLastModifiedDate = ref("");
+  const projectOriginFileId = ref<string | null>(null);
+  const projectTranscriptionFileId = ref<string | null>(null);
+  const projectSummaryFileId = ref<string | null>(null);
+  const projectFramesExtractDone = ref(false);
 
   const mediaFileId = ref("");
   const mediaFileName = ref("");
-  const mediaFileDlUrl = ref("");
+  const mediaFileMIMEType = ref("");
+  const mediaFileCreatedDate = ref("");
+  const mediaFileLastModifiedDate = ref("");
+  const mediaFileDlUrl = computed(
+    () => `/api/file/video/${mediaFileId.value}/${mediaFileMIMEType.value}`
+  );
   const isMediaFileUploaded = computed(() => mediaFileId.value !== "");
+
+  const transcriptionFileId = ref("");
+  const transcriptionFileName = ref("");
+  const transcriptionFileMIMEType = ref("");
+  const transcriptionFileCreatedDate = ref("");
+  const transcriptionFileLastModifiedDate = ref("");
+  const isTranscriptionFileUploaded = computed(
+    () => transcriptionFileId.value !== ""
+  );
 
   const taskId = ref("");
   const taskState = ref<TaskStatus>("not_started");
@@ -24,10 +44,24 @@ export const useEditorStore = defineStore("editor", () => {
     projectId.value = "";
     projectName.value = "";
     projectDescription.value = "";
+    projectCreatedDate.value = "";
+    projectLastModifiedDate.value = "";
+    projectOriginFileId.value = null;
+    projectTranscriptionFileId.value = null;
+    projectSummaryFileId.value = null;
+    projectFramesExtractDone.value = false;
 
     mediaFileId.value = "";
     mediaFileName.value = "";
-    mediaFileDlUrl.value = "";
+    mediaFileMIMEType.value = "";
+    mediaFileCreatedDate.value = "";
+    mediaFileLastModifiedDate.value = "";
+
+    transcriptionFileId.value = "";
+    transcriptionFileName.value = "";
+    transcriptionFileMIMEType.value = "";
+    transcriptionFileCreatedDate.value = "";
+    transcriptionFileLastModifiedDate.value = "";
 
     if (taskState.value === "in_progress") {
       sse.sseDisconnect();
@@ -42,10 +76,25 @@ export const useEditorStore = defineStore("editor", () => {
     projectId,
     projectName,
     projectDescription,
+    projectCreatedDate,
+    projectLastModifiedDate,
+    projectOriginFileId,
+    projectTranscriptionFileId,
+    projectSummaryFileId,
+    projectFramesExtractDone,
     mediaFileId,
     mediaFileName,
+    mediaFileMIMEType,
+    mediaFileCreatedDate,
+    mediaFileLastModifiedDate,
     mediaFileDlUrl,
     isMediaFileUploaded,
+    transcriptionFileId,
+    transcriptionFileName,
+    transcriptionFileMIMEType,
+    transcriptionFileCreatedDate,
+    transcriptionFileLastModifiedDate,
+    isTranscriptionFileUploaded,
     taskId,
     taskState,
     taskProgressPercentage,

@@ -75,20 +75,21 @@ import { config, MdEditor } from 'md-editor-v3';
 import 'md-editor-v3/lib/style.css';
 import RU from '@vavt/cm-extension/dist/locale/ru'
 import { computed, onBeforeMount, onMounted, onUnmounted, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import axios, { type AxiosProgressEvent } from 'axios';
 // #endregion
 // #region Local Imports
 import TranscriptionList from '@/components/TranscriptionList.vue';
 import Timeline from '@/components/Timeline.vue';
 import { useTheme } from '@/composables/useTheme';
-import type { FileDownloadDataResponse, FileInfoResponse } from '@/models/fileSchema';
+import type { FileData, FileDownloadDataResponse, FileInfoResponse, FileUploadResponse } from '@/models/fileSchema';
 import { useEditorStore } from '@/stores/editor';
-import { fetchProjectFiles } from '@/utils/projectCRUD';
+import { fetchProjectData, fetchProjectFiles } from '@/utils/projectCRUD';
 
 // #endregion
 
 const route = useRoute();
+const router = useRouter();
 const editor = useEditorStore();
 const theming = useTheme();
 
@@ -105,23 +106,48 @@ config({
 const transcriptionFound = ref(false);
 
 onBeforeMount(async () => {
+    editor.projectId = route.params.id as string;
+    try {
+        const projectData = await fetchProjectData(editor.projectId);
+        if (projectData) {
+            editor.projectName = projectData.name;
+            editor.projectDescription = projectData.description;
+            editor.projectCreatedDate = projectData.created_date;
+            editor.projectLastModifiedDate = projectData.last_modified_date;
+            editor.projectOriginFileId = projectData.origin_file_id;
+            editor.projectTranscriptionFileId = projectData.transcription_file_id;
+            editor.projectSummaryFileId = projectData.summary_file_id;
+            editor.projectFramesExtractDone = projectData.frames_extract_done;
+        }
+    } catch {
+        router.push('/');
+    }
     try {
         const response = await fetchProjectFiles(route.params.id as string);
         if (response && response.length > 0) {
-            const mediaFile = response.find((file) => file.file_type.startsWith("video")) as FileDownloadDataResponse;
+            const mediaFile = response.find((file) => file.id === editor.projectOriginFileId) as FileData;
             editor.mediaFileId = mediaFile.id;
-            editor.mediaFileName = mediaFile.name;
-            editor.mediaFileDlUrl = `/api/file/video/${editor.mediaFileId}`
+            editor.mediaFileName = mediaFile.file_name;
+            editor.mediaFileMIMEType = mediaFile.file_type;
+            editor.mediaFileCreatedDate = mediaFile.created_date;
+            editor.mediaFileLastModifiedDate = mediaFile.last_modified_date;
 
-            const tsFile = response.find((file) => file.name === "transcript.json");
-            if (tsFile) {
-                const completeTask: FileInfoResponse = {
-                    id: tsFile.id,
-                    name: tsFile.name,
-                }
-                editor.taskResult.push(completeTask);
-                transcriptionFound.value = true;
+            const transcriptionFile = response.find((file) => file.id === editor.projectTranscriptionFileId);
+            if (transcriptionFile) {
+                editor.transcriptionFileId = transcriptionFile.id;
+                editor.transcriptionFileName = transcriptionFile.file_name;
+                editor.transcriptionFileMIMEType = transcriptionFile.file_type;
+                editor.transcriptionFileCreatedDate = transcriptionFile.created_date;
+                editor.transcriptionFileLastModifiedDate = transcriptionFile.last_modified_date;
             }
+            // if (transcriptionFile) {
+            //     const completeTask: FileInfoResponse = {
+            //         id: tsFile.id,
+            //         name: tsFile.name,
+            //     }
+            //     editor.taskResult.push(completeTask);
+            //     transcriptionFound.value = true;
+            // } // FIXME fix loading transcription list
         }
     } catch (e) {
         console.log(e); //FIXME
@@ -147,7 +173,7 @@ async function customMediaUploader(event: FileUploadUploaderEvent) {
 
     formData.append("file", file);
     try {
-        const response = await axios.post<FileInfoResponse>("/api/file/upload", formData, {
+        const response = await axios.post<FileUploadResponse>("/api/file/upload", formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
@@ -165,8 +191,10 @@ async function customMediaUploader(event: FileUploadUploaderEvent) {
             }
         });
         editor.mediaFileId = response.data.id;
-        editor.mediaFileName = response.data.name;
-        editor.mediaFileDlUrl = `/api/file/video/${editor.mediaFileId}`
+        editor.mediaFileName = response.data.file_name;
+        editor.mediaFileMIMEType = response.data.file_type;
+        editor.mediaFileCreatedDate = response.data.created_date;
+        editor.mediaFileLastModifiedDate = response.data.last_modified_date;
     } catch (e) {
         console.log(e); //FIXME
     }

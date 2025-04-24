@@ -1,3 +1,5 @@
+import type { FileData } from "./fileSchema";
+
 export interface ProjectSingleMessage {
   message: string;
 }
@@ -30,19 +32,9 @@ export interface ProjectPatchResponse {
 
 export type ProjectGetResponse = ProjectData;
 
-export interface ProjectGetAllFilesResponse {
-  // TODO add response fields
-}
+export type ProjectGetAllFilesResponse = FileData[];
 
 export type ProjectListResponse = ProjectData[];
-
-export interface ProjectInfoResponse {
-  id: string;
-  name: string;
-  description: string;
-  created_date: string;
-  last_modified_date: string;
-}
 
 export interface ProjectPatchRequest {
   name?: string;

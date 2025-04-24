@@ -1,3 +1,18 @@
+export interface FileData {
+    id: string;
+    file_name: string;
+    file_type: string;
+    created_date: string;
+    last_modified_date: string;
+}
+
+export interface FileUploadQuery {
+    project_id: string;
+}
+
+export type FileUploadResponse = FileData;
+
+// FIXME fix from this
 export interface FileInfoResponse {
     id: string;
     name: string;
@@ -21,3 +36,4 @@ export interface FileDownloadDataResponse {
     last_modified_date: string;
     download_url: string | null;
 }
+// FIXME fix to this (delete this useless sheesh)

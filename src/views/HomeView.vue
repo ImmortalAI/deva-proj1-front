@@ -45,14 +45,14 @@ import { useUserStore } from '@/stores/user';
 import { fetchProjectsList } from '@/utils/projectCRUD';
 import { useRouter } from 'vue-router';
 import { createProject } from '@/utils/projectCRUD';
-import type { ProjectInfoResponse, ProjectCreateRequest } from '@/models/projectSchema';
+import type { ProjectCreateRequest, ProjectData } from '@/models/projectSchema';
 import { useEditorStore } from '@/stores/editor';
 
 const userStore = useUserStore();
 const editorStore = useEditorStore();
 const router = useRouter();
 
-const availableProjects = ref<ProjectInfoResponse[]>([]);
+const availableProjects = ref<ProjectData[]>([]);
 const dialogVisible = ref(false);
 
 const newProjectInit = () => {

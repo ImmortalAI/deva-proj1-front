@@ -5,7 +5,7 @@ import type {
   ProjectDeleteResponse,
   ProjectGetActiveTasksResponse,
   ProjectGetAllFilesResponse,
-  ProjectInfoResponse,
+  ProjectGetResponse,
   ProjectListResponse,
   ProjectPatchRequest,
   ProjectPatchResponse,
@@ -51,7 +51,8 @@ export async function projectActiveTasks(id: string) {
 
 export async function fetchProjectData(id: string) {
   try {
-    await axios.get<ProjectInfoResponse>(`/api/project/${id}`);
+    const response = await axios.get<ProjectGetResponse>(`/api/project/${id}`);
+    return response.data;
   } catch (e) {
     console.log(e); //FIXME
   }
