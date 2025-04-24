@@ -28,7 +28,7 @@
         <InputText id="proj-description" class="flex-auto" autocomplete="off" v-model="createdNoteText" />
       </div>
       <div class="flex justify-end gap-2">
-        <Button type="button" label="Delete" severity="Danger" @click="deleteCurrentNote"></Button>
+        <Button type="button" label="Delete" severity="danger" @click="deleteCurrentNote"></Button>
         <Button type="button" label="Cancel" severity="secondary" @click="cancelNoteCreate"></Button>
         <Button type="button" label="Save" @click="updateCurrentNote"></Button>
       </div>
@@ -124,7 +124,8 @@ async function updateCurrentNote() {
   await updateNote(updateNoteId.value, {
     text: createdNoteText.value
   })
-  dialogSaveVisible.value = false;
+  await editorStore.load_notes(editorStore.mediaFile.id);
+  dialogUpdateVisible.value = false;
 }
 
 function cancelNoteCreate() {
