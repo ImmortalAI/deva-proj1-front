@@ -1,8 +1,9 @@
 import { useSSE } from "@/composables/useSSE";
 import type { FileData } from "@/models/fileSchema";
+import type { Note } from "@/models/noteSchema";
 import type { ProjectData } from "@/models/projectSchema";
 import type { TaskSSEResponse, TaskTypes, TaskStatus } from "@/models/taskSchema";
-import { fetchProjectData, fetchProjectFiles } from "@/utils/projectCRUD";
+import { fetchProjectData, fetchProjectFiles, getNotes } from "@/utils/projectCRUD";
 import { defineStore } from "pinia";
 import { computed, reactive, ref } from "vue";
 
@@ -18,6 +19,8 @@ export const useEditorStore = defineStore("editor", () => {
   const taskType = ref<TaskTypes | null>(null);
   const taskData = reactive<TaskSSEResponse[]>([]);
 
+  const notes = ref<Note[]>([]);
+
   const sse = useSSE();
 
   async function load_project_data(project_id: string) {
@@ -27,20 +30,22 @@ export const useEditorStore = defineStore("editor", () => {
     if (files_data != undefined) {
       if (data.transcription_id != null && (transcriptionFile.value == null || data.transcription_id != transcriptionFile.value?.id)) {
         const transcription_data = files_data.find((file) => file.id === data.transcription_id) as FileData;
-        console.log(transcription_data);
         if (transcription_data)transcriptionFile.value = transcription_data;
       }
       if (data.origin_file_id  != null && (mediaFile.value == null || data.origin_file_id != mediaFile.value?.id)) {
         const media_data = files_data.find((file) => file.id === data.origin_file_id) as FileData;
-        console.log(media_data);
         if (media_data)mediaFile.value = media_data;
       }
     }
     project_data.value = data;
   }
 
-  function reset() {
+  async function load_notes(file_id: string) {
+    const new_notes= await getNotes(file_id);
+    if (new_notes) notes.value = new_notes;
+  }
 
+  function reset() {
     project_data.value = null;
     mediaFile.value = null;
     transcriptionFile.value = null;
@@ -63,7 +68,9 @@ export const useEditorStore = defineStore("editor", () => {
     taskState,
     taskType,
     taskData,
+    notes,
     reset,
-    load_project_data
+    load_project_data,
+    load_notes
   };
 });

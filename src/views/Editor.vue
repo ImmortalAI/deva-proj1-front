@@ -17,7 +17,7 @@
         <TabPanels class="max-h-full h-11/12">
             <TabPanel value="0" class="max-h-full h-full">
                 <div class="flex box-border max-h-full h-full">
-                    <div class="p-2 w-3/5 max-w-3/5 max-h-full">
+                    <div class="p-2 min-w-3/5 w-3/5 max-w-3/5 max-h-full">
                         <FileUpload v-if="editor.mediaFile == null" accept="video/*,audio/*" auto customUpload
                             @uploader="customMediaUploader($event)" :maxFileSize="10737418240">
                             <template #header="{ chooseCallback }">
@@ -109,6 +109,8 @@ onMounted(async () => {
     } catch {
         router.push('/');
     }
+    if(editor.project_data?.origin_file_id == null) return;
+    await editor.load_notes(editor.project_data?.origin_file_id)
 })
 
 onUnmounted(() => {

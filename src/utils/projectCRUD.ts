@@ -1,4 +1,5 @@
 import type { FileDownloadDataResponse } from "@/models/fileSchema";
+import type { Note, NoteCreateRequest, NoteUpdateRequest } from "@/models/noteSchema";
 import type {
   ProjectCreateRequest,
   ProjectCreateResponse,
@@ -82,5 +83,40 @@ export async function fetchProjectFiles(id: string) {
     } else {
       console.log(e); //FIXME
     }
+  }
+}
+
+export async function getNotes(file_id: string) {
+  try {
+    const response = await axios.get<Note[]>(
+      `/api/note/${file_id}`
+    );
+    return response.data;
+  } catch (e) {
+    console.log(e); //FIXME
+  }
+}
+
+export async function deleteNote(note_id: string) {
+  try {
+    await axios.delete(`/api/note/${note_id}`);
+  } catch (e) {
+    console.log(e); //FIXME
+  }
+}
+
+export async function updateNote(id: string, data: NoteUpdateRequest) {
+  try {
+    await axios.patch(`/api/note/${id}`, data);
+  } catch (e) {
+    console.log(e); //FIXME
+  }
+}
+
+export async function createNote(data: NoteCreateRequest) {
+  try {
+    await axios.post(`/api/note`, data);
+  } catch (e) {
+    console.log(e); //FIXME
   }
 }
