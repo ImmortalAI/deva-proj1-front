@@ -30,7 +30,7 @@ export const useEditorStore = defineStore("editor", () => {
   const transcriptionFileMIMEType = ref("");
   const transcriptionFileCreatedDate = ref("");
   const transcriptionFileLastModifiedDate = ref("");
-  const isTranscriptionFileUploaded = computed(
+  const isTranscriptionFileExist = computed(
     () => transcriptionFileId.value !== ""
   );
 
@@ -94,7 +94,7 @@ export const useEditorStore = defineStore("editor", () => {
     transcriptionFileMIMEType,
     transcriptionFileCreatedDate,
     transcriptionFileLastModifiedDate,
-    isTranscriptionFileUploaded,
+    isTranscriptionFileExist,
     taskId,
     taskState,
     taskProgressPercentage,
