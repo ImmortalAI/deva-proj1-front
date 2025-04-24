@@ -3,6 +3,7 @@ import type {
   ProjectCreateRequest,
   ProjectCreateResponse,
   ProjectDeleteResponse,
+  ProjectGetActiveTasksResponse,
   ProjectGetAllFilesResponse,
   ProjectInfoResponse,
   ProjectListResponse,
@@ -15,7 +16,7 @@ import axios from "axios";
 export async function createProject(createRequest: ProjectCreateRequest) {
   try {
     const response = await axios.post<ProjectCreateResponse>(
-      "/api/project/create",
+      "/api/project",
       createRequest
     );
     return response.data;
@@ -26,25 +27,37 @@ export async function createProject(createRequest: ProjectCreateRequest) {
 
 export async function deleteProject(id: string) {
   try {
-    await axios.delete<ProjectDeleteResponse>(`/api/project`, {
-      params: {
-        project_id: id,
-      },
-    });
+    await axios.delete<ProjectDeleteResponse>(`/api/project/${id}`);
   } catch (e) {
     console.log(e); //FIXME
   }
 }
 
-export async function patchProject(patchRequest: ProjectPatchRequest) {
+export async function patchProject(id: string, patchRequest: ProjectPatchRequest) {
   try {
-    await axios.patch<ProjectPatchResponse>(`/api/project`, patchRequest);
+    await axios.patch<ProjectPatchResponse>(`/api/project/${id}`, patchRequest);
   } catch (e) {
     console.log(e); //FIXME
   }
 }
 
-export async function fetchProjects() {
+export async function projectActiveTasks(id: string) {
+  try {
+    await axios.get<ProjectGetActiveTasksResponse>(`/api/project/get_active_tasks/${id}`);
+  } catch (e) {
+    console.log(e); //FIXME
+  }
+}
+
+export async function fetchProjectData(id: string) {
+  try {
+    await axios.get<ProjectInfoResponse>(`/api/project/${id}`);
+  } catch (e) {
+    console.log(e); //FIXME
+  }
+}
+
+export async function fetchProjectsList() {
   try {
     const response = await axios.get<ProjectListResponse>(
       "/api/project/list"

@@ -45,7 +45,10 @@ export interface ProjectInfoResponse {
 }
 
 export interface ProjectPatchRequest {
-  id: string;
   name?: string;
   description?: string;
+}
+
+export interface ProjectGetActiveTasksResponse {
+  // TODO
 }

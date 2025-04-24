@@ -42,7 +42,7 @@ import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import Message from 'primevue/message';
 import { useUserStore } from '@/stores/user';
-import { fetchProjects } from '@/utils/projectCRUD';
+import { fetchProjectsList } from '@/utils/projectCRUD';
 import { useRouter } from 'vue-router';
 import { createProject } from '@/utils/projectCRUD';
 import type { ProjectInfoResponse, ProjectCreateRequest } from '@/models/projectSchema';
@@ -84,7 +84,7 @@ onMounted(async () => {
     if (availableProjects.value.length > 1) {
       availableProjects.value = [];
     }
-    (await fetchProjects())?.forEach((project) => {
+    (await fetchProjectsList())?.forEach((project) => {
       availableProjects.value.push(project);
     })
   }
