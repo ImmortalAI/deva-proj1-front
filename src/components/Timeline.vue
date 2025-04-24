@@ -1,163 +1,183 @@
 <template>
-  <div class="w-full h-full flex flex-col">
-    <video-player :sources="props.video_sources" controls :class="['max-w-full', 'max-h-4/5', 'w-full', 'h-4/5']"
-      v-model:currentTime="currentTime" v-bind:duration="duration" @mounted="handleMounted">
-    </video-player>
-    <div class="flex flex-col p-4 items-center">
-      <div class="flex items-center gap-4 w-full">
-        <!-- Start Time Input -->
-        <InputMask id="timeStart" v-model="startStr" mask="99:99:99" :placeholder="numberToTimeStr(0)"
-          class="p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-28" />
-        <!-- Slider -->
-        <Slider v-model="currentTime" :min="rawStart" :max="rawEnd" class="flex-1" />
-        <!-- End Time Input -->
-        <InputMask id="timeEnd" v-model="endStr" mask="99:99:99" :placeholder="numberToTimeStr(duration)"
-          class="p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-28" />
-        <Button>Заметка</Button>
+    <div
+      ref="timelineRef"
+      class="timeline"
+      @mousedown="onMouseDown"
+      @mousemove="onMouseMove"
+      @mouseup="onMouseUp"
+      @mouseleave="onMouseUp"
+      @dblclick="onDblClick"
+    >
+      <div class="scale">
+        <div
+          v-if="currentTime > startTime && currentTime < endTime"
+          class="progress"
+          :style="progressStyle"
+        ></div>
+        <div
+          v-for="mark in markRects"
+          :key="mark.id"
+          class="mark"
+          :style="{ left: mark.left + 'px' }"
+          @click.stop="onMarkClick(mark.id)"
+        ></div>
+        <div
+          v-for="(tick, idx) in ticks"
+          :key="idx"
+          class="tick"
+          :style="{ left: tick.left + 'px' }"
+        >
+          <div class="tick-line"></div>
+          <div class="tick-label">{{ formatTime(tick.time) }}</div>
+        </div>
       </div>
-      <!-- Current time display -->
-      <p class="mt-2 text-sm">{{ currentTimeStr }}</p>
+  
+      <div
+        v-if="isSelecting"
+        class="selection"
+        :style="selectionStyle"
+      ></div>
     </div>
-  </div>
-
-</template>
-
-<script setup lang="ts">
-import { computed, ref, watch } from 'vue';
-import Slider from 'primevue/slider';
-import InputMask from 'primevue/inputmask';
-import Button from 'primevue/button';
-import { VideoPlayer, type VideoPlayerState} from '@videojs-player/vue'
-
-
-import videojs from 'video.js'
-type VideoJsPlayer = ReturnType<typeof videojs>
-
-interface Props {
-  video_sources: object[]
-}
-
-const state = ref<VideoPlayerState | null>(null)
-const player = ref<VideoJsPlayer | null>(null)
-
-const props = defineProps<Props>();
-
-const emits = defineEmits<{
-  (e: "moveStart", newStart: number): void;
-  (e: "moveEnd", newEnd: number): void;
-}>();
-
-const handleMounted = (payload: any) => {
-  state.value = payload.state
-  player.value = payload.player
-}
-
-const timeStrToNumber = (time: string): number => {
-  const [hours, minutes, seconds] = time.split(':').map(Number);
-  return (hours * 3600) + (minutes * 60) + seconds;
-};
-
-const numberToTimeStr = (seconds: number): string => {
-  const hours = Math.floor(seconds / 3600);
-  const remaining = seconds % 3600;
-  const minutes = Math.floor(remaining / 60);
-  const secs = Math.floor(remaining % 60);
-  return [
-    hours.toString().padStart(2, '0'),
-    minutes.toString().padStart(2, '0'),
-    secs.toString().padStart(2, '0')
-  ].join(':');
-};
-
-const isValidTime = (val: string): boolean => {
-  if (!/^\d{1,2}:\d{2}:\d{2}$/.test(val)) return false;
-  const [h, m, s] = val.split(':').map(Number);
-  return h >= 0 && h <= 99 && m >= 0 && m <= 59 && s >= 0 && s <= 59;
-};
-
-const duration = computed(() => {
-  return state.value?.duration || 0;
-});
-
-watch(duration, () => {
-  resetBoundaries();
-});
-
-const currentTime = computed({
-  get: () => {
-    return state.value?.currentTime || 0;
-  },
-  set: (val: number) => {
-    if (!player.value) return;
-    player.value.currentTime(val);
+  </template>
+  
+  <script setup>
+  import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
+  
+  const props = defineProps({
+    startTime: { type: Number, default: 0 },
+    endTime: { type: Number, default: 3600 },
+    tickCount: { type: Number, default: 10 },
+    currentTime: { type: Number, default: 0 },
+    marks: { type: Array, default: () => [] }
+  })
+  const emit = defineEmits(['create_note', 'mark_click'])
+  
+  const timelineRef = ref(null)
+  const width = ref(0)
+  const isSelecting = ref(false)
+  const startX = ref(0)
+  const currentX = ref(0)
+  
+  function updateWidth() {
+    if (timelineRef.value) width.value = timelineRef.value.clientWidth
   }
-});
-
-const pointer = ref<number>(0);
-
-const rawStart = ref<number>(0);
-const rawEnd = ref<number>(duration.value);
-
-const startStr = ref<string>(numberToTimeStr(0));
-const endStr = ref<string>(numberToTimeStr(duration.value));
-
-const lastValidStart = ref(startStr.value);
-const lastValidEnd = ref(endStr.value);
-
-const currentTimeStr = computed(() => {
-  return numberToTimeStr(currentTime.value);
-});
-
-// const currentTimeStr = computed({
-//   get: () => numberToTimeStr(currentTime.value),
-//   set: (val: string) => {
-//     if (isValidTime(val)) {
-//       const seconds = timeStrToNumber(val);
-//       if (seconds >= rawStart.value && seconds <= rawEnd.value) {
-//         pointer.value = seconds;
-//       }
-//     }
-//   }
-// });
-
-
-
-const resetBoundaries = () => {
-  rawStart.value = 0;
-  rawEnd.value = duration.value || 0;
-  startStr.value = numberToTimeStr(0);
-  endStr.value = numberToTimeStr(duration.value || 0);
-  lastValidStart.value = startStr.value;
-  lastValidEnd.value = endStr.value;
-}
-
-watch(pointer, (newVal) => {
-  currentTime.value = newVal;
-});
-
-watch(startStr, (newVal) => {
-  if (isValidTime(newVal)) {
-    const seconds = timeStrToNumber(newVal);
-    if (seconds >= 0 && seconds < rawEnd.value && seconds <= (duration.value || 0)) {
-      rawStart.value = seconds;
-      lastValidStart.value = newVal;
-      emits("moveStart", seconds);
-      return;
+  
+  let resizeObserver
+  onMounted(async () => {
+    await nextTick()
+    updateWidth()
+    resizeObserver = new ResizeObserver(updateWidth)
+    if (timelineRef.value) resizeObserver.observe(timelineRef.value)
+    window.addEventListener('resize', updateWidth)
+  })
+  
+  onBeforeUnmount(() => {
+    if (resizeObserver) resizeObserver.disconnect()
+    window.removeEventListener('resize', updateWidth)
+  })
+  
+  const ticks = computed(() => {
+    const total = props.endTime - props.startTime
+    return Array.from({ length: props.tickCount + 1 }, (_, i) => {
+      const frac = i / props.tickCount
+      return { time: props.startTime + frac * total, left: frac * width.value }
+    })
+  })
+  
+  const markRects = computed(() => {
+    const total = props.endTime - props.startTime
+    return props.marks
+      .filter(m => m.time >= props.startTime && m.time <= props.endTime)
+      .map(m => ({ id: m.id, left: ((m.time - props.startTime) / total) * width.value }))
+  })
+  
+  const selectionStyle = computed(() => {
+    const x = Math.min(startX.value, currentX.value)
+    const w = Math.abs(currentX.value - startX.value)
+    return { left: x + 'px', width: w + 'px', top: '0px', height: '100%' }
+  })
+  
+  const progressStyle = computed(() => {
+    const total = props.endTime - props.startTime
+    const frac = (props.currentTime - props.startTime) / total
+    return { left: '0px', width: `${Math.max(0, Math.min(frac, 1)) * width.value}px`, top: '0px', height: '100%' }
+  })
+  
+  function xToTime(x) {
+    const clamped = Math.max(0, Math.min(x, width.value))
+    return props.startTime + (clamped / width.value) * (props.endTime - props.startTime)
+  }
+  
+  function formatTime(timeSec) {
+    const offset = Math.floor(timeSec - props.startTime)
+    const hrs = Math.floor(offset / 3600)
+    const mins = Math.floor((offset % 3600) / 60)
+    const secs = offset % 60
+    const pad = n => String(n).padStart(2, '0')
+    return hrs > 0 ? `${pad(hrs)}:${pad(mins)}:${pad(secs)}` : `${pad(mins)}:${pad(secs)}`
+  }
+  
+  function onMouseDown(e) {
+    isSelecting.value = true
+    const rect = timelineRef.value.getBoundingClientRect()
+    startX.value = e.clientX - rect.left
+    currentX.value = startX.value
+  }
+  
+  function onMouseMove(e) {
+    if (!isSelecting.value) return
+    const rect = timelineRef.value.getBoundingClientRect()
+    currentX.value = e.clientX - rect.left
+  }
+  
+  function onMouseUp() {
+    if (!isSelecting.value) return
+    const [x1, x2] = [startX.value, currentX.value]
+    if (Math.abs(x2 - x1) > 5) {
+      const t1 = xToTime(x1), t2 = xToTime(x2)
+      props.startTime = Math.min(t1, t2)
+      props.endTime = Math.max(t1, t2)
     }
+    isSelecting.value = false
   }
-  startStr.value = lastValidStart.value;
-});
-
-watch(endStr, (newVal) => {
-  if (isValidTime(newVal)) {
-    const seconds = timeStrToNumber(newVal);
-    if (seconds <= (duration.value || 0) && seconds > rawStart.value) {
-      rawEnd.value = seconds;
-      lastValidEnd.value = newVal;
-      emits("moveEnd", seconds);
-      return;
-    }
+  
+  function onDblClick(e) {
+    const rect = timelineRef.value.getBoundingClientRect()
+    emit('create_note', xToTime(e.clientX - rect.left))
   }
-  endStr.value = lastValidEnd.value;
-});
-</script>
+  
+  function onMarkClick(id) {
+    emit('mark_click', id)
+  }
+  </script>
+  
+  <style scoped>
+  .timeline {
+    position: relative;
+    width: 100%;
+    height: 80px;
+    padding: 0 20px;
+    box-sizing: border-box;
+    background: var(--color-neutral-800);
+    user-select: none;
+    cursor: pointer;
+  }
+  
+  .scale { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
+  
+  .tick {
+    position: absolute;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform: translateX(-50%);
+  }
+  
+  .tick-line { width: 1px; height: 8px; background: #ab7777; }
+  .tick-label { margin-top: 2px; font-size: 10px; color: var(--color-neutral-100); white-space: nowrap; }
+  
+  .mark { position: absolute; top: 0; width: 4px; height: 100%; background: rgba(255, 0, 255, 0.5); cursor: pointer; }
+  .progress { position: absolute; background: rgba(0, 123, 255, 0.5); pointer-events: none; }
+  .selection { position: absolute; background: rgba(0, 123, 255, 0.3); border: 1px dashed #007bff; pointer-events: none; }
+  </style>
