@@ -22,7 +22,8 @@ import Slider from 'primevue/slider';
 import InputMask from 'primevue/inputmask';
 import Button from 'primevue/button';
 import { VideoPlayer, type VideoPlayerState} from '@videojs-player/vue'
-import Timeline from './Timeline.vue';
+// @ts-ignore
+import Timeline from '@/components/Timeline.vue'; 
 
 
 import videojs from 'video.js'

@@ -17,8 +17,8 @@
         <TabPanels class="max-h-full h-11/12">
             <TabPanel value="0" class="max-h-full h-full">
                 <div class="flex box-border max-h-full h-full">
-                    <div class="p-2 max-w-3/5 max-h-full">
-                        <FileUpload v-if="!editor.isMediaFileUploaded" accept="video/*,audio/*" auto customUpload
+                    <div class="p-2 w-3/5 max-w-3/5 max-h-full">
+                        <FileUpload v-if="editor.mediaFile == null" accept="video/*,audio/*" auto customUpload
                             @uploader="customMediaUploader($event)" :maxFileSize="10737418240">
                             <template #header="{ chooseCallback }">
                                 <Button class="w-full" @click="chooseCallback">Выбрать файл</Button>
@@ -42,8 +42,7 @@
                             <Timeline :video_sources="video_sources" />
                         </div>
                     </div>
-                    <TranscriptionList class="p-6 grow-1 h-full overflow-y-scrollx" :fileId="editor.mediaFileId"
-                        :transcription-found="transcriptionFound" @set-video-timing="setVideoTime"></TranscriptionList>
+                    <TranscriptionList class="p-6 grow-1 h-full overflow-y-scrollx"></TranscriptionList>
                 </div>
             </TabPanel>
             <TabPanel value="1" class="max-h-full">
@@ -79,11 +78,9 @@ import axios, { type AxiosProgressEvent } from 'axios';
 // #region Local Imports
 import TranscriptionList from '@/components/TranscriptionList.vue';
 import Timeline from '@/components/VideoPlayerWithTimeline.vue';
-import Test from '@/components/Timeline.vue';
 import { useTheme } from '@/composables/useTheme';
-import type { FileData, FileDownloadDataResponse, FileInfoResponse, FileUploadResponse } from '@/models/fileSchema';
+import type { FileUploadResponse } from '@/models/fileSchema';
 import { useEditorStore } from '@/stores/editor';
-import { fetchProjectData, fetchProjectFiles } from '@/utils/projectCRUD';
 
 // #endregion
 
@@ -104,57 +101,14 @@ config({
 
 const transcriptionFound = ref(false);
 
-onBeforeMount(async () => {
-    editor.projectId = route.params.id as string;
+onMounted(async () => {
+    editor.project_id = route.params.id as string;
+
     try {
-        const projectData = await fetchProjectData(editor.projectId);
-        if (projectData) {
-            editor.projectName = projectData.name;
-            editor.projectDescription = projectData.description;
-            editor.projectCreatedDate = projectData.created_date;
-            editor.projectLastModifiedDate = projectData.last_modified_date;
-            editor.projectOriginFileId = projectData.origin_file_id;
-            editor.projectTranscriptionFileId = projectData.transcription_file_id;
-            editor.projectSummaryFileId = projectData.summary_file_id;
-            editor.projectFramesExtractDone = projectData.frames_extract_done;
-        }
+        await editor.load_project_data(editor.project_id);
     } catch {
         router.push('/');
     }
-    try {
-        const response = await fetchProjectFiles(route.params.id as string);
-        if (response && response.length > 0) {
-            const mediaFile = response.find((file) => file.id === editor.projectOriginFileId) as FileData;
-            editor.mediaFileId = mediaFile.id;
-            editor.mediaFileName = mediaFile.file_name;
-            editor.mediaFileMIMEType = mediaFile.file_type;
-            editor.mediaFileCreatedDate = mediaFile.created_date;
-            editor.mediaFileLastModifiedDate = mediaFile.last_modified_date;
-
-            const transcriptionFile = response.find((file) => file.id === editor.projectTranscriptionFileId);
-            if (transcriptionFile) {
-                editor.transcriptionFileId = transcriptionFile.id;
-                editor.transcriptionFileName = transcriptionFile.file_name;
-                editor.transcriptionFileMIMEType = transcriptionFile.file_type;
-                editor.transcriptionFileCreatedDate = transcriptionFile.created_date;
-                editor.transcriptionFileLastModifiedDate = transcriptionFile.last_modified_date;
-            }
-            // if (transcriptionFile) {
-            //     const completeTask: FileInfoResponse = {
-            //         id: tsFile.id,
-            //         name: tsFile.name,
-            //     }
-            //     editor.taskResult.push(completeTask);
-            //     transcriptionFound.value = true;
-            // } // FIXME fix loading transcription list
-        }
-    } catch (e) {
-        console.log(e); //FIXME
-    }
-})
-
-onMounted(() => {
-    editor.projectId = route.params.id as string;
 })
 
 onUnmounted(() => {
@@ -166,7 +120,7 @@ const uploadFileProgress = ref(0);
 const video_sources = computed(() => {
     return [
         {
-            src: `/api/file/video/${editor.mediaFileId}`,
+            src: `/api/file/video/${editor.project_data?.origin_file_id}`,
             type: 'video/mp4'
         }
     ]
@@ -198,32 +152,14 @@ async function customMediaUploader(event: FileUploadUploaderEvent) {
                 }
             }
         });
-        editor.mediaFileId = response.data.id;
-        editor.mediaFileName = response.data.file_name;
-        editor.mediaFileMIMEType = response.data.file_type;
-        editor.mediaFileCreatedDate = response.data.created_date;
-        editor.mediaFileLastModifiedDate = response.data.last_modified_date;
+        if (!editor.project_data){
+            editor.load_project_data(editor.project_id);
+            return
+        }
+        editor.project_data.origin_file_id = response.data.id;
+        editor.mediaFile = response.data;
     } catch (e) {
         console.log(e); //FIXME
-    }
-}
-
-const videoElement = ref<HTMLVideoElement | null>(null);
-
-function setVideoTime(seconds: number) {
-    if (videoElement.value === null) {
-        console.warn('Видео элемент не найден.');
-        return
-    }
-
-    if (isNaN(videoElement.value.duration)) {
-        videoElement.value.addEventListener('loadedmetadata', () => {
-            if (videoElement.value) {
-                videoElement.value.currentTime = seconds;
-            }
-        }, { once: true });
-    } else {
-        videoElement.value.currentTime = seconds
     }
 }
 </script>

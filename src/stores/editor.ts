@@ -1,37 +1,17 @@
 import { useSSE } from "@/composables/useSSE";
+import type { FileData } from "@/models/fileSchema";
+import type { ProjectData } from "@/models/projectSchema";
 import type { TaskSSEResponse, TaskTypes, TaskStatus } from "@/models/taskSchema";
+import { fetchProjectData, fetchProjectFiles } from "@/utils/projectCRUD";
 import { defineStore } from "pinia";
 import { computed, reactive, ref } from "vue";
 
 export const useEditorStore = defineStore("editor", () => {
-  const projectId = ref("");
-  const projectName = ref("");
-  const projectDescription = ref("");
-  const projectCreatedDate = ref("");
-  const projectLastModifiedDate = ref("");
-  const projectOriginFileId = ref<string | null>(null);
-  const projectTranscriptionFileId = ref<string | null>(null);
-  const projectSummaryFileId = ref<string | null>(null);
-  const projectFramesExtractDone = ref(false);
+  const project_id = ref<string>("");
 
-  const mediaFileId = ref("");
-  const mediaFileName = ref("");
-  const mediaFileMIMEType = ref("");
-  const mediaFileCreatedDate = ref("");
-  const mediaFileLastModifiedDate = ref("");
-  const mediaFileDlUrl = computed(
-    () => `/api/file/video/${mediaFileId.value}`
-  );
-  const isMediaFileUploaded = computed(() => mediaFileId.value !== "");
-
-  const transcriptionFileId = ref("");
-  const transcriptionFileName = ref("");
-  const transcriptionFileMIMEType = ref("");
-  const transcriptionFileCreatedDate = ref("");
-  const transcriptionFileLastModifiedDate = ref("");
-  const isTranscriptionFileExist = computed(
-    () => transcriptionFileId.value !== ""
-  );
+  const project_data = ref<ProjectData | null>(null);
+  const mediaFile = ref<FileData | null>(null);
+  const transcriptionFile = ref<FileData | null>(null);
 
   const taskId = ref("");
   const taskState = ref<TaskStatus>("not_started");
@@ -39,28 +19,31 @@ export const useEditorStore = defineStore("editor", () => {
   const taskData = reactive<TaskSSEResponse[]>([]);
 
   const sse = useSSE();
+
+  async function load_project_data(project_id: string) {
+    const data = await fetchProjectData(project_id)
+    if (data == undefined) return;
+    const files_data = await fetchProjectFiles(project_id);
+    if (files_data != undefined) {
+      if (data.transcription_id != null && (transcriptionFile.value == null || data.transcription_id != transcriptionFile.value?.id)) {
+        const transcription_data = files_data.find((file) => file.id === data.transcription_id) as FileData;
+        console.log(transcription_data);
+        if (transcription_data)transcriptionFile.value = transcription_data;
+      }
+      if (data.origin_file_id  != null && (mediaFile.value == null || data.origin_file_id != mediaFile.value?.id)) {
+        const media_data = files_data.find((file) => file.id === data.origin_file_id) as FileData;
+        console.log(media_data);
+        if (media_data)mediaFile.value = media_data;
+      }
+    }
+    project_data.value = data;
+  }
+
   function reset() {
-    projectId.value = "";
-    projectName.value = "";
-    projectDescription.value = "";
-    projectCreatedDate.value = "";
-    projectLastModifiedDate.value = "";
-    projectOriginFileId.value = null;
-    projectTranscriptionFileId.value = null;
-    projectSummaryFileId.value = null;
-    projectFramesExtractDone.value = false;
 
-    mediaFileId.value = "";
-    mediaFileName.value = "";
-    mediaFileMIMEType.value = "";
-    mediaFileCreatedDate.value = "";
-    mediaFileLastModifiedDate.value = "";
-
-    transcriptionFileId.value = "";
-    transcriptionFileName.value = "";
-    transcriptionFileMIMEType.value = "";
-    transcriptionFileCreatedDate.value = "";
-    transcriptionFileLastModifiedDate.value = "";
+    project_data.value = null;
+    mediaFile.value = null;
+    transcriptionFile.value = null;
 
     if (taskState.value === "in_progress") {
       sse.disconnect();
@@ -72,32 +55,15 @@ export const useEditorStore = defineStore("editor", () => {
   }
 
   return {
-    projectId,
-    projectName,
-    projectDescription,
-    projectCreatedDate,
-    projectLastModifiedDate,
-    projectOriginFileId,
-    projectTranscriptionFileId,
-    projectSummaryFileId,
-    projectFramesExtractDone,
-    mediaFileId,
-    mediaFileName,
-    mediaFileMIMEType,
-    mediaFileCreatedDate,
-    mediaFileLastModifiedDate,
-    mediaFileDlUrl,
-    isMediaFileUploaded,
-    transcriptionFileId,
-    transcriptionFileName,
-    transcriptionFileMIMEType,
-    transcriptionFileCreatedDate,
-    transcriptionFileLastModifiedDate,
-    isTranscriptionFileExist,
+    project_id,
+    project_data,
+    mediaFile,
+    transcriptionFile,
     taskId,
     taskState,
     taskType,
     taskData,
     reset,
+    load_project_data
   };
 });
