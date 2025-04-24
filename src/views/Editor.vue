@@ -17,7 +17,7 @@
         <TabPanels class="max-h-full h-11/12">
             <TabPanel value="0" class="max-h-full h-full">
                 <div class="flex box-border max-h-full h-full">
-                    <div class="p-2 w-3/5 max-w-3/5 max-h-full">
+                    <div class="p-2 min-w-3/5 w-3/5 max-w-3/5 max-h-full">
                         <FileUpload v-if="editor.mediaFile == null" accept="video/*,audio/*" auto customUpload
                             @uploader="customMediaUploader($event)" :maxFileSize="10737418240">
                             <template #header="{ chooseCallback }">
@@ -39,14 +39,15 @@
                         </FileUpload>
                         <div v-else class="flex flex-col max-w-full max-h-full w-full h-full">
                             <!-- <audio :src="editor.mediaFileDlUrl"></audio> -->
-                            <Timeline :video_sources="video_sources" />
+                            <VideoPlayerWithTimeline :video_sources="video_sources" ref="player"/>
                         </div>
                     </div>
-                    <TranscriptionList class="p-6 grow-1 h-full overflow-y-scrollx"></TranscriptionList>
+                    <TranscriptionList class="p-6 grow-1 h-full overflow-y-scrollx" @setVideoTiming="setTimecode"></TranscriptionList>
                 </div>
             </TabPanel>
             <TabPanel value="1" class="max-h-full">
-                <MdEditor v-model="editorText" previewOnly :theme="theming.isDark ? 'dark' : 'light'" language="ru" />
+                <SummaryTab></SummaryTab>
+                
             </TabPanel>
             <TabPanel value="2" class="max-h-full">
                 <Gallery></Gallery>
@@ -68,9 +69,7 @@ import Button from 'primevue/button';
 import type { FileUploadUploaderEvent } from 'primevue';
 // #endregion
 // #region Libs Imports
-import { config, MdEditor } from 'md-editor-v3';
-import 'md-editor-v3/lib/style.css';
-import RU from '@vavt/cm-extension/dist/locale/ru'
+
 import { computed, onBeforeMount, onMounted, onUnmounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios, { type AxiosProgressEvent } from 'axios';
@@ -79,26 +78,25 @@ import axios, { type AxiosProgressEvent } from 'axios';
 import TranscriptionList from '@/components/TranscriptionList.vue';
 import Timeline from '@/components/VideoPlayerWithTimeline.vue';
 import Gallery from '@/components/Gallery.vue';
+import VideoPlayerWithTimeline from '@/components/VideoPlayerWithTimeline.vue';
 import { useTheme } from '@/composables/useTheme';
 import type { FileUploadResponse } from '@/models/fileSchema';
 import { useEditorStore } from '@/stores/editor';
+import SummaryTab from '@/components/SummaryTab.vue';
 
 // #endregion
+const player = ref()
+
+function setTimecode(timecode: number){
+    player.value.setVideoTimecode(timecode);
+}
 
 const route = useRoute();
 const router = useRouter();
 const editor = useEditorStore();
 const theming = useTheme();
 
-const editorText = ref('');
 
-config({
-    editorConfig: {
-        languageUserDefined: {
-            'ru': RU
-        }
-    }
-});
 
 const transcriptionFound = ref(false);
 
@@ -110,6 +108,8 @@ onMounted(async () => {
     } catch {
         router.push('/');
     }
+    if(editor.project_data?.origin_file_id == null) return;
+    await editor.load_notes(editor.project_data?.origin_file_id)
 })
 
 onUnmounted(() => {

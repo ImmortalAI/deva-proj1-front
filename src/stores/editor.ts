@@ -1,8 +1,9 @@
 import { useSSE } from "@/composables/useSSE";
 import type { FileData } from "@/models/fileSchema";
+import type { Note } from "@/models/noteSchema";
 import type { ProjectData } from "@/models/projectSchema";
 import type { TaskSSEResponse, TaskTypes, TaskStatus } from "@/models/taskSchema";
-import { fetchProjectData, fetchProjectFiles } from "@/utils/projectCRUD";
+import { fetchProjectData, fetchProjectFiles, getNotes } from "@/utils/projectCRUD";
 import { defineStore } from "pinia";
 import { computed, reactive, ref } from "vue";
 
@@ -19,6 +20,8 @@ export const useEditorStore = defineStore("editor", () => {
   const taskState = ref<TaskStatus>("not_started");
   const taskType = ref<TaskTypes | null>(null);
   const taskData = reactive<TaskSSEResponse[]>([]);
+
+  const notes = ref<Note[]>([]);
 
   const sse = useSSE();
 
@@ -48,8 +51,12 @@ export const useEditorStore = defineStore("editor", () => {
     project_data.value = data;
   }
 
-  function reset() {
+  async function load_notes(file_id: string) {
+    const new_notes= await getNotes(file_id);
+    if (new_notes) notes.value = new_notes;
+  }
 
+  function reset() {
     project_data.value = null;
     mediaFile.value = null;
     transcriptionFile.value = null;
@@ -74,7 +81,9 @@ export const useEditorStore = defineStore("editor", () => {
     taskState,
     taskType,
     taskData,
+    notes,
     reset,
-    load_project_data
+    load_project_data,
+    load_notes
   };
 });
