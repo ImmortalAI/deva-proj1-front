@@ -46,8 +46,6 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import Slider from 'primevue/slider';
-import InputMask from 'primevue/inputmask';
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
 import { InputText } from 'primevue';
@@ -63,9 +61,6 @@ type VideoJsPlayer = ReturnType<typeof videojs>
 const dialogSaveVisible = ref(false);
 const dialogUpdateVisible = ref(false);
 const editorStore = useEditorStore();
-
-
-
 
 interface Props {
   video_sources: object[]
@@ -246,4 +241,12 @@ watch(endStr, (newVal) => {
   }
   endStr.value = lastValidEnd.value;
 });
+
+function setVideoTimecode(seconds: number) {
+  currentTime.value = seconds;
+}
+defineExpose({
+  setVideoTimecode
+})
+
 </script>
