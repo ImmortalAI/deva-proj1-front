@@ -61,7 +61,7 @@ export async function fetchProjectData(id: string) {
 export async function fetchProjectsList() {
   try {
     const response = await axios.get<ProjectListResponse>(
-      "/api/project/list"
+      "/api/project"
     );
     return response.data;
   } catch (e) {
