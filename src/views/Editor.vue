@@ -1,6 +1,6 @@
 <template>
-    <Tabs value="0">
-        <TabList>
+    <Tabs value="0" class="max-w-screen w-screen h-full max-h-full flex flex-col">
+        <TabList class="h-1/12">
             <Tab value="0">
                 <i class="pi pi-wrench mr-2"></i>
                 <span>Транскрипция</span>
@@ -14,10 +14,10 @@
                 <span>Кадры</span>
             </Tab>
         </TabList>
-        <TabPanels>
-            <TabPanel value="0">
-                <div class="flex h-[calc(100vh-10rem)]">
-                    <div class="basis-3/5 p-2">
+        <TabPanels class="max-h-full h-11/12">
+            <TabPanel value="0" class="max-h-full h-full">
+                <div class="flex box-border max-h-full h-full">
+                    <div class="p-2 max-w-3/5 max-h-full">
                         <FileUpload v-if="!editor.isMediaFileUploaded" accept="video/*,audio/*" auto customUpload
                             @uploader="customMediaUploader($event)" :maxFileSize="10737418240">
                             <template #header="{ chooseCallback }">
@@ -37,21 +37,19 @@
                                 </div>
                             </template>
                         </FileUpload>
-                        <div v-else class="flex flex-col">
-                            <video ref="videoElement" :src="editor.mediaFileDlUrl" controls
-                                class="w-full grow object-contain bg-black aspect-video" />
+                        <div v-else class="flex flex-col max-w-full max-h-full w-full h-full">
                             <!-- <audio :src="editor.mediaFileDlUrl"></audio> -->
-                            <Timeline :video-element-ref="videoElement" />
+                            <Timeline :video_sources="video_sources" />
                         </div>
                     </div>
-                    <TranscriptionList class="p-6 basis-2/5 h-full overflow-y-scrollx" :fileId="editor.mediaFileId"
+                    <TranscriptionList class="p-6 grow-1 h-full overflow-y-scrollx" :fileId="editor.mediaFileId"
                         :transcription-found="transcriptionFound" @set-video-timing="setVideoTime"></TranscriptionList>
                 </div>
             </TabPanel>
-            <TabPanel value="1">
+            <TabPanel value="1" class="max-h-full">
                 <MdEditor v-model="editorText" previewOnly :theme="theming.isDark ? 'dark' : 'light'" language="ru" />
             </TabPanel>
-            <TabPanel value="2">
+            <TabPanel value="2" class="max-h-full">
                 <p>Nothing</p>
             </TabPanel>
         </TabPanels>
@@ -85,6 +83,7 @@ import { useTheme } from '@/composables/useTheme';
 import type { FileData, FileDownloadDataResponse, FileInfoResponse, FileUploadResponse } from '@/models/fileSchema';
 import { useEditorStore } from '@/stores/editor';
 import { fetchProjectData, fetchProjectFiles } from '@/utils/projectCRUD';
+import { VideoPlayer } from '@videojs-player/vue';
 
 // #endregion
 
@@ -163,6 +162,15 @@ onUnmounted(() => {
 })
 
 const uploadFileProgress = ref(0);
+
+const video_sources = computed(() => {
+    return [
+        {
+            src: `/api/file/video/${editor.mediaFileId}`,
+            type: 'video/mp4'
+        }
+    ]
+})
 
 async function customMediaUploader(event: FileUploadUploaderEvent) {
     const file = Array.isArray(event.files) ? event.files[0] : event.files;

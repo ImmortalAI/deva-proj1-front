@@ -8,6 +8,8 @@ import router from './router'
 import PrimeVue from 'primevue/config'
 import Aura from '@primeuix/themes/aura'
 import 'primeicons/primeicons.css'
+import VueVideoPlayer from '@videojs-player/vue'
+import 'video.js/dist/video-js.css'
 
 const app = createApp(App)
 
@@ -21,5 +23,6 @@ app.use(PrimeVue, {
         },
     },
 })
+app.use(VueVideoPlayer)
 
 app.mount('#app')
