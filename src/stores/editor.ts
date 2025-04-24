@@ -12,6 +12,8 @@ export const useEditorStore = defineStore("editor", () => {
   const project_data = ref<ProjectData | null>(null);
   const mediaFile = ref<FileData | null>(null);
   const transcriptionFile = ref<FileData | null>(null);
+  const summaryFile = ref<FileData | null>(null);
+  const videoFrames = reactive<FileData[]>([]);
 
   const taskId = ref("");
   const taskState = ref<TaskStatus>("not_started");
@@ -25,15 +27,22 @@ export const useEditorStore = defineStore("editor", () => {
     if (data == undefined) return;
     const files_data = await fetchProjectFiles(project_id);
     if (files_data != undefined) {
-      if (data.transcription_id != null && (transcriptionFile.value == null || data.transcription_id != transcriptionFile.value?.id)) {
+      if (data.transcription_id != null && transcriptionFile.value == null) {
         const transcription_data = files_data.find((file) => file.id === data.transcription_id) as FileData;
-        console.log(transcription_data);
         if (transcription_data)transcriptionFile.value = transcription_data;
       }
-      if (data.origin_file_id  != null && (mediaFile.value == null || data.origin_file_id != mediaFile.value?.id)) {
+      if (data.origin_file_id  != null && mediaFile.value == null) {
         const media_data = files_data.find((file) => file.id === data.origin_file_id) as FileData;
-        console.log(media_data);
         if (media_data)mediaFile.value = media_data;
+      }
+      if(data.summary_file_id != null && summaryFile.value == null){
+        const summary_data = files_data.find((file) => file.id === data.summary_file_id) as FileData;
+        if (summary_data)summaryFile.value = summary_data;
+      }
+      if(data.frames_extract_done && videoFrames.length == 0){
+        files_data.forEach((file) => {
+          if(file.file_type.startsWith("image")) videoFrames.push(file);
+        });
       }
     }
     project_data.value = data;
@@ -59,6 +68,8 @@ export const useEditorStore = defineStore("editor", () => {
     project_data,
     mediaFile,
     transcriptionFile,
+    summaryFile,
+    videoFrames,
     taskId,
     taskState,
     taskType,

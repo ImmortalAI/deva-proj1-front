@@ -49,7 +49,7 @@
                 <MdEditor v-model="editorText" previewOnly :theme="theming.isDark ? 'dark' : 'light'" language="ru" />
             </TabPanel>
             <TabPanel value="2" class="max-h-full">
-                <test></test>
+                <Gallery></Gallery>
             </TabPanel>
         </TabPanels>
     </Tabs>
@@ -78,6 +78,7 @@ import axios, { type AxiosProgressEvent } from 'axios';
 // #region Local Imports
 import TranscriptionList from '@/components/TranscriptionList.vue';
 import Timeline from '@/components/VideoPlayerWithTimeline.vue';
+import Gallery from '@/components/Gallery.vue';
 import { useTheme } from '@/composables/useTheme';
 import type { FileUploadResponse } from '@/models/fileSchema';
 import { useEditorStore } from '@/stores/editor';
