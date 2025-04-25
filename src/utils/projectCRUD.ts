@@ -11,6 +11,7 @@ import type {
   ProjectPatchRequest,
   ProjectPatchResponse,
 } from "@/models/projectSchema";
+import type { ActiveTask } from "@/models/taskSchema";
 import { useUserStore } from "@/stores/user";
 import axios from "axios";
 
@@ -44,7 +45,8 @@ export async function patchProject(id: string, patchRequest: ProjectPatchRequest
 
 export async function projectActiveTasks(id: string) {
   try {
-    await axios.get<ProjectGetActiveTasksResponse>(`/api/project/get_active_tasks/${id}`);
+    const response = await axios.get<ActiveTask[]>(`/api/project/get_active_tasks/${id}`);
+    return response.data
   } catch (e) {
     console.log(e); //FIXME
   }

@@ -12,7 +12,7 @@ export interface ProjectData {
     last_modified_date: string;
     origin_file_id: string | null;
     transcription_id: string | null;
-    summary_file_id: string | null;
+    summary_id: string | null;
     frames_extract_done: boolean;
   }
 

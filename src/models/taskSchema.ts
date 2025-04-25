@@ -17,3 +17,14 @@ export interface TaskSSEResponse {
   done: boolean;
   status: number | null;
 }
+
+export interface ActiveTask {
+  id: string;
+  task_type: TaskTypes;
+}
+
+export interface TaskData {
+  id: string;
+  task_type: TaskTypes;
+  data: TaskSSEResponse | null;
+}

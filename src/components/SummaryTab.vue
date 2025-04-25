@@ -1,10 +1,13 @@
 <template>
     <div class="w-full h-full flex flex-col gap-3">
-        <div class="flex items-center justify-between">
-            <Button>{{ editorStore.project_data?.summary_file_id == null ? 'Создать' : 'Пересоздать' }}
-                нейро-конспект</Button>
+        <div class="flex items-center justify-between h-1/12">
+            <Button>{{ editorStore.project_data?.summary_id == null ? 'Создать' : 'Пересоздать' }}
+                нейро-конспект
+            </Button>
         </div>
-        <MdEditor v-model="editorText" previewOnly :theme="theming.isDark ? 'dark' : 'light'" language="ru" />
+        <div class="h-11/12">
+            <MdEditor style="height: 100%;" v-model="editorStore.summaryFileContent" previewOnly :theme="theming.isDark ? 'dark' : 'light'" language="ru" :disabled="editorStore.project_data?.summary_id == null"/>
+        </div>
     </div>
 </template>
 

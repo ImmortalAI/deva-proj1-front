@@ -45,11 +45,11 @@
                     <TranscriptionList class="p-6 grow-1 h-full overflow-y-scrollx" @setVideoTiming="setTimecode"></TranscriptionList>
                 </div>
             </TabPanel>
-            <TabPanel value="1" class="max-h-full">
+            <TabPanel value="1" class="max-h-full h-full">
                 <SummaryTab></SummaryTab>
                 
             </TabPanel>
-            <TabPanel value="2" class="max-h-full">
+            <TabPanel value="2" class="max-h-full h-full">
                 <Gallery></Gallery>
             </TabPanel>
         </TabPanels>

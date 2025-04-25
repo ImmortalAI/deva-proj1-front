@@ -4,7 +4,10 @@
             <Button v-if="editorStore.taskState === 'not_started'" :disabled="editorStore.mediaFile == null"
                 @click="tasks.createTask({ project_id: editorStore.project_id, task_type: 'transcribe', prompt: '' })"
                 class="w-fit h-fit p-0 rounded-full">Транскрибировать</Button>
-            <p v-else>{{ tasks.totalTaskProgress }}%</p>
+            <div class="w-4/5" v-else>
+                <p>Обработка...</p>
+                <ProgressBar :mode="tasks.totalTaskProgress.value == 0 ? 'indeterminate' : 'determinate'" :value="tasks.totalTaskProgress.value">{{  Math.floor(tasks.totalTaskProgress.value) }} %</ProgressBar>
+            </div>
         </div>
         <div v-else class="h-full">
             <ScrollPanel style="width: 100%; height: 100%">
@@ -29,15 +32,14 @@
 import type { FileInfoResponse, TimecodeFile } from '@/models/fileSchema';
 import { useEditorStore } from '@/stores/editor';
 
+import ProgressBar from 'primevue/progressbar';
 import { onMounted, ref, watch } from 'vue';
 import Button from 'primevue/button';
 import axios from 'axios';
 import { useSSE } from '@/composables/useSSE';
-import type { TaskCreateRequest, TaskCreateResponse } from '@/models/taskSchema';
 import timeConverter from '@/utils/timeConverter';
 import ScrollPanel from 'primevue/scrollpanel';
 import { useTask } from '@/composables/useTask';
-import { fetchProjectData, fetchProjectFiles } from '@/utils/projectCRUD';
 import { useRoute } from 'vue-router';
 
 const editorStore = useEditorStore();
