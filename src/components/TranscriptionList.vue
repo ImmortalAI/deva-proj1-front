@@ -13,12 +13,12 @@
             <ScrollPanel style="width: 100%; height: 100%">
                 <template v-for="item, ind in transcriptionItems">
                     <div :class="[{ 'bg-neutral-900': ind % 2 === 1 }]" class="p-2">
-                        <div class="text-xs text-violet-600 flex flex-row gap-1">
+                        <div class="text-xs text-primary-400 flex flex-row gap-1">
                             <p @click="emits('setVideoTiming', parseFloat(item.start))"
-                                class="hover:text-violet-500 hover:cursor-pointer">{{ timeConverter(item.start) }}</p>
+                                class="hover:text-primary-300 hover:cursor-pointer">{{ timeConverter(item.start) }}</p>
                             <p>-</p>
                             <p @click="emits('setVideoTiming', parseFloat(item.end))"
-                                class="hover:text-violet-500 cursor-pointer">{{ timeConverter(item.end) }}</p>
+                                class="hover:text-primary-300 cursor-pointer">{{ timeConverter(item.end) }}</p>
                         </div>
                         <p class="text-neutral-50">{{ item.text }}</p>
                     </div>

@@ -91,7 +91,7 @@ async function saveSummary() {
     const blob = new Blob([editorStore.summaryFileContent], { type: 'text/markdown' })
     const formData = new FormData();
     formData.append('file', blob, 'summary.md');
-    const response = await axios.post("/api/file/upload", formData, {
+    const response = await axios.post("/api/file", formData, {
         headers: {
             'Content-Type': 'multipart/form-data',
         },
