@@ -20,3 +20,10 @@ export interface FileUploadQuery {
 }
 
 export type FileUploadResponse = FileData;
+
+export interface FilePatchRequest {
+  file_name?: string;
+  metadata_is_hide?: boolean;
+  metadata_text?: string;
+  metadata_timecode?: number;
+}

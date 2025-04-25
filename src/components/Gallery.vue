@@ -10,19 +10,22 @@
         <div class="flex items-center w-full">
             <div class="flex flex-wrap max-h-[75vh] overflow-y-scroll">
                 <div class="w-48 border-2 border-neutral-500 rounded-xl p-1 m-4 flex items-center"
-                    v-for="image in editor.videoFrames" :key="image.id">
+                    v-for="image in videoImagesToShow" :key="image.id">
                     <Image :image-class="['aspect-video', 'object-cover']" :src="getImageUrl(image.id)"
                         :alt="image.file_name" preview>
-                        <template #original="{ class: originalClass }">
-                            <div class="flex gap-4 p-8" @click.stop>
+                        <template #original>
+                            <div class="flex gap-4 p-8" @click.stop="textareaContent = ''">
                                 <img class="w-2/3 object-contain" :src="getImageUrl(image.id)" :alt="image.file_name" />
                                 <div class="basis-1/2 flex flex-col p-8 gap-4 bg-neutral-400 dark:bg-neutral-800">
                                     <IftaLabel class="grow-1">
-                                        <Textarea id="image-comment" class="w-full h-full"></Textarea>
+                                        <Textarea v-model="textareaContent" id="image-comment"
+                                            class="w-full h-full"></Textarea>
                                         <label for="image-comment">Комментарий к изображению</label>
                                     </IftaLabel>
-                                    <Button severity="contrast" label="Добавить комментарий"></Button>
-                                    <Button severity="danger" label="Скрыть изображение"></Button>
+                                    <Button @click="addCommentImage(image.id)" severity="contrast"
+                                        label="Добавить комментарий"></Button>
+                                    <Button @click="hideImage(image.id)" severity="danger"
+                                        label="Скрыть изображение"></Button>
                                 </div>
                             </div>
                         </template>
@@ -41,12 +44,33 @@ import Button from 'primevue/button';
 import Textarea from 'primevue/textarea';
 import IftaLabel from 'primevue/iftalabel';
 import ProgressSpinner from 'primevue/progressspinner';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
+import axios from 'axios';
+import type { FilePatchRequest } from '@/models/fileSchema';
 
 const editor = useEditorStore();
 const tasks = useTask();
 
 const getImageUrl = (imgId: string) => `/api/file/download/${imgId}`
 
-const imageComment = ref('')
+const videoImagesToShow = computed(() => {
+    return editor.videoFrames.filter((frame) => !frame.metadata_is_hide)
+})
+const textareaContent = ref<string | null>(null);
+
+const addCommentImage = async (imgId: string) => {
+    const index = editor.videoFrames.findIndex((frame) => frame.id === imgId);
+    if (index !== -1 && textareaContent.value) {
+        editor.videoFrames[index].metadata_text = textareaContent.value;
+        await axios.patch(`/api/file/${imgId}`, { metadata_text: textareaContent.value } as FilePatchRequest).catch(e => console.log(e));
+    }
+}
+
+const hideImage = async (imgId: string) => {
+    const index = editor.videoFrames.findIndex((frame) => frame.id === imgId);
+    if (index !== -1) {
+        editor.videoFrames[index].metadata_is_hide = true;
+        await axios.patch(`/api/file/${imgId}`, { metadata_is_hide: true } as FilePatchRequest).catch(e => console.log(e));
+    }
+}
 </script>
