@@ -17,6 +17,7 @@
                             <div class="flex gap-4 p-8" @click.stop="loadMetaImage(image.id)">
                                 <img class="w-2/3 object-contain" :src="getImageUrl(image.id)" :alt="image.file_name" />
                                 <div class="basis-1/2 flex flex-col p-8 gap-4 bg-neutral-400 dark:bg-neutral-800">
+                                    <InputText v-model="timecodeText" disabled></InputText>
                                     <IftaLabel class="grow-1">
                                         <Textarea v-model="textareaContent" id="image-comment"
                                             class="w-full h-full"></Textarea>
@@ -44,6 +45,7 @@ import Button from 'primevue/button';
 import Textarea from 'primevue/textarea';
 import IftaLabel from 'primevue/iftalabel';
 import ProgressSpinner from 'primevue/progressspinner';
+import InputText from 'primevue/inputtext';
 import { computed, ref } from 'vue';
 import axios from 'axios';
 import type { FilePatchRequest } from '@/models/fileSchema';
@@ -53,16 +55,35 @@ const tasks = useTask();
 
 const getImageUrl = (imgId: string) => `/api/file/download/${imgId}`
 
+const numberToTimeStr = (seconds: number): string => {
+  const hours = Math.floor(seconds / 3600);
+  const remaining = seconds % 3600;
+  const minutes = Math.floor(remaining / 60);
+  const secs = Math.floor(remaining % 60);
+  return [
+    hours.toString().padStart(2, '0'),
+    minutes.toString().padStart(2, '0'),
+    secs.toString().padStart(2, '0')
+  ].join(':');
+};
+
 const videoImagesToShow = computed(() => {
-    return editor.videoFrames.filter((frame) => !frame.metadata_is_hide)
+    return editor.videoFrames.filter((frame) => !frame.metadata_is_hide).sort((a, b) => a.metadata_timecode - b.metadata_timecode);
 })
+
+const timecodeText = ref("");
 const textareaContent = ref<string | null>(null);
 
 const loadMetaImage = async (imgId: string) => {
-    const index = editor.videoFrames.findIndex((frame) => frame.id === imgId);
+    if(textareaContent.value){
+        const index = editor.videoFrames.findIndex((frame) => frame.id === imgId);
     if (index !== -1) {
+        timecodeText.value = numberToTimeStr(editor.videoFrames[index].metadata_timecode);
         textareaContent.value = editor.videoFrames[index].metadata_text;
+    } else {
+        textareaContent.value = "";
     }
+}
 }
 
 const addCommentImage = async (imgId: string) => {
