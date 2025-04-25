@@ -6,7 +6,7 @@
                 class="w-fit h-fit p-0 rounded-full">Транскрибировать</Button>
             <div class="w-4/5" v-else>
                 <p>Обработка...</p>
-                <ProgressBar :mode="tasks.totalTaskProgress.value == 0 ? 'indeterminate' : 'determinate'" :value="tasks.totalTaskProgress.value">{{  Math.floor(tasks.totalTaskProgress.value) }} %</ProgressBar>
+                <ProgressBar :mode="tasks.transcribeTaskProgress.value == 0 ? 'indeterminate' : 'determinate'" :value="tasks.transcribeTaskProgress.value">{{  Math.floor(tasks.transcribeTaskProgress.value) }} %</ProgressBar>
             </div>
         </div>
         <div v-else class="h-full">

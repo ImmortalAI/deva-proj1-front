@@ -53,6 +53,11 @@ export function useTask() {
         return editor.taskData.reduce((sum, task) => sum + (task.status ?? 1), 0) / (subtaskCount.value + 1) * 100;
     })
 
+    const transcribeTaskProgress = computed(() => {
+        const task = editor.taskData.find((task) => task.task_type === 'transcribe');
+        return task?.status ?? 0 * 100;
+    })
+
     watch(editor.taskData, async (newValue) => {
         const mainTask = newValue.find((task) => task.id === editor.taskId);
         if (mainTask !== undefined && mainTask.done) {
@@ -65,5 +70,6 @@ export function useTask() {
     return {
         createTask,
         totalTaskProgress,
+        transcribeTaskProgress
     }
 }

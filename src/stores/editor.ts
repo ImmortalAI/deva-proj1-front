@@ -81,6 +81,8 @@ export const useEditorStore = defineStore("editor", () => {
     mediaFile.value = null;
     transcriptionFile.value = null;
 
+    summaryFileContent.value = '';
+
     if (taskState.value === "in_progress") {
       sse.disconnect();
     }

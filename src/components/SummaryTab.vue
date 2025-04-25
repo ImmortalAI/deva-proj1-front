@@ -31,7 +31,8 @@
                 {{ editorStore.project_data?.summary_id == null ? 'Создать' : 'Пересоздать' }}
                 нейро-конспект
             </Button>
-            <ProgressSpinner v-if="editorStore.taskType == 'summary' && editorStore.taskState == 'in_progress'" style="height: 50px; margin: 0;"/>
+            <ProgressSpinner v-if="editorStore.taskType == 'summary' && editorStore.taskState == 'in_progress'"
+                style="height: 50px; margin: 0;" />
         </div>
         <div class="h-11/12">
             <MdEditor style="height: 100%;"
@@ -39,8 +40,8 @@
                 previewOnly
                 :theme="theming.isDark ? 'dark' : 'light'"
                 language="ru"
-                :transformImgUrl="transformImgUrl"
-                :disabled="editorDisabled" />
+                :disabled="editorDisabled"
+                @onSave="saveSummary" />
         </div>
     </div>
 </template>
@@ -57,9 +58,7 @@ import { useTask } from '@/composables/useTask';
 import Dialog from 'primevue/dialog';
 import Textarea from 'primevue/textarea';
 import ProgressSpinner from 'primevue/progressspinner';
-function transformImgUrl(str: string) {
-    return `/api/file/download/${str}`
-}
+import axios from 'axios';
 
 const editorDisabled = computed(() => {
     return editorStore.project_data?.summary_id == null || editorStore.taskState == 'in_progress' && editorStore.taskType == 'summary';
@@ -71,6 +70,10 @@ const theming = useTheme();
 const editorStore = useEditorStore();
 const tasks = useTask()
 const dialogVisible = ref(false);
+
+function isValidUUID(str: string) {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str);
+}
 
 function createSummaryTask() {
     tasks.createTask({ project_id: editorStore.project_id, task_type: 'summary', prompt: user_prompt.value });
@@ -84,6 +87,21 @@ function cancel() {
     dialogVisible.value = false;
 }
 
+async function saveSummary() {
+    const blob = new Blob([editorStore.summaryFileContent], { type: 'text/markdown' })
+    const formData = new FormData();
+    formData.append('file', blob, 'summary.md');
+    const response = await axios.post("/api/file/upload", formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+        params: {
+            project_id: editorStore.project_id,
+        },
+    });
+    await editorStore.load_project_data(editorStore.project_id);
+}
+
 config({
     editorConfig: {
         languageUserDefined: {
@@ -91,22 +109,24 @@ config({
         }
     },
     markdownItConfig(md) {
-    // Сохраняем оригинальный рендерер для image
-    const defaultRender = md.renderer.rules.image || ((tokens, idx, options, env, self) => {
-      return self.renderToken(tokens, idx, options);
-    });
+        // Сохраняем оригинальный рендерер для image
+        const defaultRender = md.renderer.rules.image || ((tokens, idx, options, env, self) => {
+            return self.renderToken(tokens, idx, options);
+        });
 
-    md.renderer.rules.image = (tokens, idx, options, env, self) => {
-      const token = tokens[idx];
-      const srcIndex = token.attrIndex('src');
-      if (srcIndex >= 0) {
-        const src = token.attrs![srcIndex][1];
-        token.attrs![srcIndex][1] =  `/api/file/download/${src}`;
-      }
-      // Вызываем оригинал
-      return defaultRender(tokens, idx, options, env, self);
-    };
-  }
+
+        md.renderer.rules.image = (tokens, idx, options, env, self) => {
+            const token = tokens[idx];
+            const srcIndex = token.attrIndex('src');
+            if (srcIndex >= 0) {
+                const src = token.attrs![srcIndex][1];
+                if (isValidUUID(src))
+                    token.attrs![srcIndex][1] = `/api/file/download/${src}`;
+            }
+            // Вызываем оригинал
+            return defaultRender(tokens, idx, options, env, self);
+        };
+    }
 });
 
 </script>

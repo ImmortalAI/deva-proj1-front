@@ -1,8 +1,7 @@
 <template>
   <div class="w-full h-full flex flex-col">
-    <Dialog :visible="dialogSaveVisible" header="Создание проекта" :style="{ width: '25rem' }" :position="'top'" modal
+    <Dialog :visible="dialogSaveVisible" header="Добавление заметки" :style="{ width: '25rem' }" :position="'top'" modal
       :draggable="false" :closable="false">
-      <span class="text-neutral-500 dark:text-neutral-400 block mb-8">Добавление заметки.</span>
       <div class="flex items-center gap-4 mb-4">
         <label for="proj-name" class="font-semibold w-24">Время заметки</label>
         <InputText id="proj-name" class="flex-auto" autocomplete="off" :model-value="numberToTimeStr(createdNoteTime)" disabled></InputText>
