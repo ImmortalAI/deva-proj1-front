@@ -17,11 +17,11 @@
             </div>
             <div class="flex justify-end gap-2">
                 <Button type="button"
-                    label="Cancel"
+                    label="Отменить"
                     severity="secondary"
                     @click="cancel"></Button>
                 <Button type="button"
-                    label="Save"
+                    label="Отправить"
                     @click="createSummaryTask"></Button>
             </div>
         </Dialog>
