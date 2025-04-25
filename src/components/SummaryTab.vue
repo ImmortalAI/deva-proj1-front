@@ -1,35 +1,112 @@
 <template>
     <div class="w-full h-full flex flex-col gap-3">
+        <Dialog :visible="dialogVisible"
+            header="Создание проекта"
+            :style="{ width: '25rem' }"
+            :position="'top'"
+            modal
+            :draggable="false"
+            :closable="false">
+            <span class="text-neutral-500 dark:text-neutral-400 block mb-8">Генерация конспекта.</span>
+            <div class="flex items-center gap-4 mb-4">
+                <Textarea id="user-prompt"
+                    class="flex-auto"
+                    autocomplete="off"
+                    v-model="user_prompt"
+                    placeholder="Введите пожелания по конспекту"></Textarea>
+            </div>
+            <div class="flex justify-end gap-2">
+                <Button type="button"
+                    label="Cancel"
+                    severity="secondary"
+                    @click="cancel"></Button>
+                <Button type="button"
+                    label="Save"
+                    @click="createSummaryTask"></Button>
+            </div>
+        </Dialog>
         <div class="flex items-center justify-between h-1/12">
-            <Button>{{ editorStore.project_data?.summary_id == null ? 'Создать' : 'Пересоздать' }}
+            <Button :disabled="editorStore.taskState == 'in_progress'"
+                @click="openDialog">
+                {{ editorStore.project_data?.summary_id == null ? 'Создать' : 'Пересоздать' }}
                 нейро-конспект
             </Button>
+            <ProgressSpinner v-if="editorStore.taskType == 'summary' && editorStore.taskState == 'in_progress'" style="height: 50px; margin: 0;"/>
         </div>
         <div class="h-11/12">
-            <MdEditor style="height: 100%;" v-model="editorStore.summaryFileContent" previewOnly :theme="theming.isDark ? 'dark' : 'light'" language="ru" :disabled="editorStore.project_data?.summary_id == null"/>
+            <MdEditor style="height: 100%;"
+                v-model="editorStore.summaryFileContent"
+                previewOnly
+                :theme="theming.isDark ? 'dark' : 'light'"
+                language="ru"
+                :transformImgUrl="transformImgUrl"
+                :disabled="editorDisabled" />
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
 import { useTheme } from '@/composables/useTheme';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { config, MdEditor } from 'md-editor-v3';
 import { Button } from 'primevue';
 import 'md-editor-v3/lib/style.css';
 import RU from '@vavt/cm-extension/dist/locale/ru'
 import { useEditorStore } from '@/stores/editor';
-const editorText = ref('');
+import { useTask } from '@/composables/useTask';
+import Dialog from 'primevue/dialog';
+import Textarea from 'primevue/textarea';
+import ProgressSpinner from 'primevue/progressspinner';
+function transformImgUrl(str: string) {
+    return `/api/file/download/${str}`
+}
+
+const editorDisabled = computed(() => {
+    return editorStore.project_data?.summary_id == null || editorStore.taskState == 'in_progress' && editorStore.taskType == 'summary';
+});
+
+const user_prompt = ref('');
 const theming = useTheme();
 
 const editorStore = useEditorStore();
+const tasks = useTask()
+const dialogVisible = ref(false);
+
+function createSummaryTask() {
+    tasks.createTask({ project_id: editorStore.project_id, task_type: 'summary', prompt: user_prompt.value });
+    dialogVisible.value = false;
+}
+function openDialog() {
+    user_prompt.value = '';
+    dialogVisible.value = true;
+}
+function cancel() {
+    dialogVisible.value = false;
+}
 
 config({
     editorConfig: {
         languageUserDefined: {
             'ru': RU
         }
-    }
+    },
+    markdownItConfig(md) {
+    // Сохраняем оригинальный рендерер для image
+    const defaultRender = md.renderer.rules.image || ((tokens, idx, options, env, self) => {
+      return self.renderToken(tokens, idx, options);
+    });
+
+    md.renderer.rules.image = (tokens, idx, options, env, self) => {
+      const token = tokens[idx];
+      const srcIndex = token.attrIndex('src');
+      if (srcIndex >= 0) {
+        const src = token.attrs![srcIndex][1];
+        token.attrs![srcIndex][1] =  `/api/file/download/${src}`;
+      }
+      // Вызываем оригинал
+      return defaultRender(tokens, idx, options, env, self);
+    };
+  }
 });
 
 </script>

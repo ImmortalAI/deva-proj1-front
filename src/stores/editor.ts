@@ -42,23 +42,23 @@ export const useEditorStore = defineStore("editor", () => {
     if (files_data != undefined) {
       if (data.transcription_id != null && transcriptionFile.value == null) {
         const transcription_data = files_data.find((file) => file.id === data.transcription_id) as FileData;
-        if (transcription_data)transcriptionFile.value = transcription_data;
+        if (transcription_data) transcriptionFile.value = transcription_data;
       }
-      if (data.origin_file_id  != null && mediaFile.value == null) {
+      if (data.origin_file_id != null && mediaFile.value == null) {
         const media_data = files_data.find((file) => file.id === data.origin_file_id) as FileData;
-        if (media_data)mediaFile.value = media_data;
+        if (media_data) mediaFile.value = media_data;
       }
-      if(data.summary_id != null && summaryFile.value == null){
+      if (data.summary_id != null && (summaryFile.value == null || data.summary_id != summaryFile.value?.id)) {
         const summary_data = files_data.find((file) => file.id === data.summary_id) as FileData;
-        if (summary_data) { 
+        if (summary_data) {
           summaryFile.value = summary_data;
           const response = await axios.get<string>(`/api/file/download/${summary_data.id}`);
           summaryFileContent.value = response.data
         }
       }
-      if(data.frames_extract_done && videoFrames.length == 0){
+      if (data.frames_extract_done && videoFrames.length == 0) {
         files_data.forEach((file) => {
-          if(file.file_type.startsWith("image")) videoFrames.push(file);
+          if (file.file_type.startsWith("image")) videoFrames.push(file);
         });
       }
     }
@@ -72,7 +72,7 @@ export const useEditorStore = defineStore("editor", () => {
   }
 
   async function load_notes(file_id: string) {
-    const new_notes= await getNotes(file_id);
+    const new_notes = await getNotes(file_id);
     if (new_notes) notes.value = new_notes;
   }
 
