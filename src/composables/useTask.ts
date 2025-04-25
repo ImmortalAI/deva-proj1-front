@@ -55,7 +55,7 @@ export function useTask() {
 
     const transcribeTaskProgress = computed(() => {
         const task = editor.taskData.find((task) => task.task_type === 'transcribe');
-        return task?.status ?? 0 * 100;
+        return (task?.status ?? 0) * 100;
     })
 
     watch(editor.taskData, async (newValue) => {
