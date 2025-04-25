@@ -10,10 +10,10 @@ const router = useRouter();
 const userStore = useUserStore();
 const theming = useTheme();
 
-function handleAuth() {
+async function handleAuth() {
   if (userStore.isAuthenticated) {
-    logoutUser();
-    router.push('/');
+    await logoutUser();
+    router.push('/'); 
   }
   else {
     router.push('/login');
