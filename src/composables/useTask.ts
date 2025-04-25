@@ -40,8 +40,6 @@ export function useTask() {
     };
 
     watch(sse.data, (newValue) => {
-        console.log("Found new data:", newValue);
-        
         if(newValue === null) return; 
         const subtaskIndex = editor.taskData.findIndex((task) => task.id === newValue.id);
         if (subtaskIndex !== -1) {
@@ -56,7 +54,7 @@ export function useTask() {
     })
 
     watch(editor.taskData, async (newValue) => {
-        if (newValue.length === (subtaskCount.value + 1) && newValue.every((task) => task.done)) {
+        if (newValue.find((task) => task.id === editor.taskId)) {
             editor.taskState = "done";
             sse.disconnect();
             await editor.load_project_data(editor.project_id);
