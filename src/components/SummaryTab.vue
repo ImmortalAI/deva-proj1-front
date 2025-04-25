@@ -102,7 +102,7 @@ config({
             const srcIndex = token.attrIndex('src');
             if (srcIndex >= 0) {
                 const src = token.attrs![srcIndex][1];
-                if (isValidUUID(src))
+                //if (isValidUUID(src))
                     token.attrs![srcIndex][1] = `/api/file/download/${src}`;
             }
             // Вызываем оригинал
