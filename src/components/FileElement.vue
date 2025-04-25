@@ -1,7 +1,7 @@
 <template>
     <div ref="divElement" class="w-full p-2 border-2 border-violet-900 rounded-2xl">
-        <a href="#" @click.prevent="openProject" class="block w-full"><span
-                class="text-center block w-full">{{ props.nameFile }}</span></a>
+        <a href="#" @click.prevent="openProject" class="block w-full"><span class="text-center block w-full">{{
+            props.nameFile }}</span></a>
     </div>
 </template>
 

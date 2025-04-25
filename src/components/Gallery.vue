@@ -1,7 +1,8 @@
 <template>
     <div class="w-full">
         <div class="flex gap-4">
-            <Button v-if="editor.videoFrames.length == 0" :disabled="editor.taskState === 'in_progress'" label="Выполнить нарезку из видео" severity="secondary"
+            <Button v-if="editor.videoFrames.length == 0" :disabled="editor.taskState === 'in_progress'"
+                label="Выполнить нарезку из видео" severity="secondary"
                 @click="tasks.createTask({ project_id: editor.project_id, task_type: 'frames_extract', prompt: '' })" />
             <ProgressSpinner v-if="editor.taskState === 'in_progress'" class="!w-12 !h-12 !m-0"></ProgressSpinner>
             <Button label="Загрузить изображение" severity="secondary" />
@@ -14,11 +15,10 @@
                         :alt="image.file_name" preview>
                         <template #original="{ class: originalClass }">
                             <div class="flex gap-4 p-8" @click.stop>
-                                <img class="w-2/3 object-contain" :src="getImageUrl(image.id)"
-                                    :alt="image.file_name" />
+                                <img class="w-2/3 object-contain" :src="getImageUrl(image.id)" :alt="image.file_name" />
                                 <div class="basis-1/2 flex flex-col p-8 gap-4 bg-neutral-400 dark:bg-neutral-800">
                                     <IftaLabel class="grow-1">
-                                        <Textarea id="image-comment" class="w-full h-full" ></Textarea>
+                                        <Textarea id="image-comment" class="w-full h-full"></Textarea>
                                         <label for="image-comment">Комментарий к изображению</label>
                                     </IftaLabel>
                                     <Button severity="contrast" label="Добавить комментарий"></Button>

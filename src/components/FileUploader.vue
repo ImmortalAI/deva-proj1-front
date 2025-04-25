@@ -23,7 +23,7 @@ const props = defineProps({
     },
 })
 
-const fileInput = ref < HTMLInputElement | null > (null)
+const fileInput = ref<HTMLInputElement | null>(null)
 
 const triggerFileInput = () => {
     fileInput.value?.click()

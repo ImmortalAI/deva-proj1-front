@@ -5,16 +5,16 @@ export interface ProjectSingleMessage {
 }
 
 export interface ProjectData {
-    id: string;
-    name: string;
-    description: string;
-    created_date: string;
-    last_modified_date: string;
-    origin_file_id: string | null;
-    transcription_id: string | null;
-    summary_id: string | null;
-    frames_extract_done: boolean;
-  }
+  id: string;
+  name: string;
+  description: string;
+  created_date: string;
+  last_modified_date: string;
+  origin_file_id: string | null;
+  transcription_id: string | null;
+  summary_id: string | null;
+  frames_extract_done: boolean;
+}
 
 export interface ProjectCreateRequest {
   name: string;

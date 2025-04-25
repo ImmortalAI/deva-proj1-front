@@ -47,14 +47,14 @@ const router = createRouter({
       component: () => import("../views/Editor.vue"),
       meta: {
         requiresAuth: true,
-      }, 
-    }
+      },
+    },
   ],
 });
 
-router.beforeEach( async (to) => {
+router.beforeEach(async (to) => {
   const user = useUserStore();
-  await user.fetchUserData()
+  await user.fetchUserData();
   if (to.meta.requiresGuest && user.isAuthenticated) {
     return { name: "home" };
   } else if (to.meta.requiresAuth && !user.isAuthenticated)

@@ -1,33 +1,19 @@
 <template>
     <div class="w-full h-full flex flex-col gap-3">
-        <Dialog :visible="dialogVisible"
-            header="Создание проекта"
-            :style="{ width: '25rem' }"
-            :position="'top'"
-            modal
-            :draggable="false"
-            :closable="false">
+        <Dialog :visible="dialogVisible" header="Создание проекта" :style="{ width: '25rem' }" :position="'top'" modal
+            :draggable="false" :closable="false">
             <span class="text-neutral-500 dark:text-neutral-400 block mb-8">Генерация конспекта.</span>
             <div class="flex items-center gap-4 mb-4">
-                <Textarea id="user-prompt"
-                    class="flex-auto"
-                    autocomplete="off"
-                    v-model="user_prompt"
+                <Textarea id="user-prompt" class="flex-auto" autocomplete="off" v-model="user_prompt"
                     placeholder="Введите пожелания по конспекту"></Textarea>
             </div>
             <div class="flex justify-end gap-2">
-                <Button type="button"
-                    label="Отменить"
-                    severity="secondary"
-                    @click="cancel"></Button>
-                <Button type="button"
-                    label="Отправить"
-                    @click="createSummaryTask"></Button>
+                <Button type="button" label="Отменить" severity="secondary" @click="cancel"></Button>
+                <Button type="button" label="Отправить" @click="createSummaryTask"></Button>
             </div>
         </Dialog>
         <div class="flex items-center justify-between h-1/12">
-            <Button :disabled="editorStore.taskState == 'in_progress'"
-                @click="openDialog">
+            <Button :disabled="editorStore.taskState == 'in_progress'" @click="openDialog">
                 {{ editorStore.project_data?.summary_id == null ? 'Создать' : 'Пересоздать' }}
                 нейро-конспект
             </Button>
@@ -35,12 +21,8 @@
                 style="height: 50px; margin: 0;" />
         </div>
         <div class="h-11/12">
-            <MdEditor style="height: 100%;"
-                v-model="editorStore.summaryFileContent"
-                previewOnly
-                :theme="theming.isDark ? 'dark' : 'light'"
-                language="ru"
-                :disabled="editorDisabled"
+            <MdEditor style="height: 100%;" v-model="editorStore.summaryFileContent" previewOnly
+                :theme="theming.isDark ? 'dark' : 'light'" language="ru" :disabled="editorDisabled"
                 @onSave="saveSummary" />
         </div>
     </div>

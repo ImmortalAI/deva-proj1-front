@@ -6,7 +6,9 @@
                 class="w-fit h-fit p-0 rounded-full">Транскрибировать</Button>
             <div class="w-4/5" v-else>
                 <p>Обработка...</p>
-                <ProgressBar :mode="tasks.transcribeTaskProgress.value == 0 ? 'indeterminate' : 'determinate'" :value="tasks.transcribeTaskProgress.value">{{  Math.floor(tasks.transcribeTaskProgress.value) }} %</ProgressBar>
+                <ProgressBar :mode="tasks.transcribeTaskProgress.value == 0 ? 'indeterminate' : 'determinate'"
+                    :value="tasks.transcribeTaskProgress.value">{{ Math.floor(tasks.transcribeTaskProgress.value) }} %
+                </ProgressBar>
             </div>
         </div>
         <div v-else class="h-full">
@@ -29,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import type { FileInfoResponse, TimecodeFile } from '@/models/fileSchema';
+import type { TimecodeFile } from '@/models/fileSchema';
 import { useEditorStore } from '@/stores/editor';
 
 import ProgressBar from 'primevue/progressbar';

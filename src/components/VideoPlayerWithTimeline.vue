@@ -4,7 +4,8 @@
       :draggable="false" :closable="false">
       <div class="flex items-center gap-4 mb-4">
         <label for="proj-name" class="font-semibold w-24">Время заметки</label>
-        <InputText id="proj-name" class="flex-auto" autocomplete="off" :model-value="numberToTimeStr(createdNoteTime)" disabled></InputText>
+        <InputText id="proj-name" class="flex-auto" autocomplete="off" :model-value="numberToTimeStr(createdNoteTime)"
+          disabled></InputText>
       </div>
       <div class="flex items-center gap-4 mb-4">
         <label for="proj-description" class="font-semibold w-24">Текст заметки</label>
@@ -20,7 +21,8 @@
       <span class="text-neutral-500 dark:text-neutral-400 block mb-8">Добавление заметки.</span>
       <div class="flex items-center gap-4 mb-4">
         <label for="proj-name" class="font-semibold w-24">Время заметки</label>
-        <InputText id="proj-name" class="flex-auto" autocomplete="off" :model-value="numberToTimeStr(createdNoteTime)" disabled></InputText>
+        <InputText id="proj-name" class="flex-auto" autocomplete="off" :model-value="numberToTimeStr(createdNoteTime)"
+          disabled></InputText>
       </div>
       <div class="flex items-center gap-4 mb-4">
         <label for="proj-description" class="font-semibold w-24">Текст заметки</label>
@@ -92,7 +94,7 @@ function clickNote(id: string) {
   dialogUpdateVisible.value = true;
 }
 
-async function deleteCurrentNote(){
+async function deleteCurrentNote() {
   if (editorStore.mediaFile == null) return;
   await deleteNote(updateNoteId.value);
   createdNoteTime.value = 0;

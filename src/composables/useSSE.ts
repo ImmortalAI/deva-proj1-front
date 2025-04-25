@@ -29,7 +29,7 @@ export function useSSE() {
   }
 
   function disconnect() {
-    if(reconnectTimeout) clearTimeout(reconnectTimeout);
+    if (reconnectTimeout) clearTimeout(reconnectTimeout);
     es?.close();
     es = null;
   }

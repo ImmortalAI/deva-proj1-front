@@ -1,25 +1,25 @@
 export interface AuthSingleMessage {
-    message: string;
+  message: string;
 }
 
 export interface AuthLoginRequest {
-    login: string;
-    password: string;
+  login: string;
+  password: string;
 }
 
 export type AuthLoginResponse = AuthSingleMessage;
 
 export interface RegisterRequest {
-    login: string;
-    password: string;
-    password_repeat: string;
+  login: string;
+  password: string;
+  password_repeat: string;
 }
 
 export type AuthRegisterResponse = AuthSingleMessage;
 
 export interface AuthUserInfoResponse {
-    id: string;
-    login: string;
+  id: string;
+  login: string;
 }
 
 export type AuthLogoutResponse = AuthSingleMessage;

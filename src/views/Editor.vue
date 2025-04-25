@@ -39,15 +39,16 @@
                         </FileUpload>
                         <div v-else class="flex flex-col max-w-full max-h-full w-full h-full">
                             <!-- <audio :src="editor.mediaFileDlUrl"></audio> -->
-                            <VideoPlayerWithTimeline :video_sources="video_sources" ref="player"/>
+                            <VideoPlayerWithTimeline :video_sources="video_sources" ref="player" />
                         </div>
                     </div>
-                    <TranscriptionList class="p-6 grow-1 h-full overflow-y-scrollx" @setVideoTiming="setTimecode"></TranscriptionList>
+                    <TranscriptionList class="p-6 grow-1 h-full overflow-y-scrollx" @setVideoTiming="setTimecode">
+                    </TranscriptionList>
                 </div>
             </TabPanel>
             <TabPanel value="1" class="max-h-full h-full">
                 <SummaryTab></SummaryTab>
-                
+
             </TabPanel>
             <TabPanel value="2" class="max-h-full h-full">
                 <Gallery></Gallery>
@@ -87,7 +88,7 @@ import SummaryTab from '@/components/SummaryTab.vue';
 // #endregion
 const player = ref()
 
-function setTimecode(timecode: number){
+function setTimecode(timecode: number) {
     player.value.setVideoTimecode(timecode);
 }
 
@@ -108,7 +109,7 @@ onMounted(async () => {
     } catch {
         router.push('/');
     }
-    if(editor.project_data?.origin_file_id == null) return;
+    if (editor.project_data?.origin_file_id == null) return;
     await editor.load_notes(editor.project_data?.origin_file_id)
 })
 
@@ -153,7 +154,7 @@ async function customMediaUploader(event: FileUploadUploaderEvent) {
                 }
             }
         });
-        if (!editor.project_data){
+        if (!editor.project_data) {
             editor.load_project_data(editor.project_id);
             return
         }

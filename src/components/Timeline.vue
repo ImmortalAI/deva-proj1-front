@@ -15,7 +15,7 @@
   </div>
 </template>
 
-<script setup >
+<script setup>
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 
 const props = defineProps({

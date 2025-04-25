@@ -1,10 +1,12 @@
-import type { FileDownloadDataResponse } from "@/models/fileSchema";
-import type { Note, NoteCreateRequest, NoteUpdateRequest } from "@/models/noteSchema";
+import type {
+  Note,
+  NoteCreateRequest,
+  NoteUpdateRequest,
+} from "@/models/noteSchema";
 import type {
   ProjectCreateRequest,
   ProjectCreateResponse,
   ProjectDeleteResponse,
-  ProjectGetActiveTasksResponse,
   ProjectGetAllFilesResponse,
   ProjectGetResponse,
   ProjectListResponse,
@@ -35,7 +37,10 @@ export async function deleteProject(id: string) {
   }
 }
 
-export async function patchProject(id: string, patchRequest: ProjectPatchRequest) {
+export async function patchProject(
+  id: string,
+  patchRequest: ProjectPatchRequest
+) {
   try {
     await axios.patch<ProjectPatchResponse>(`/api/project/${id}`, patchRequest);
   } catch (e) {
@@ -45,8 +50,10 @@ export async function patchProject(id: string, patchRequest: ProjectPatchRequest
 
 export async function projectActiveTasks(id: string) {
   try {
-    const response = await axios.get<ActiveTask[]>(`/api/project/get_active_tasks/${id}`);
-    return response.data
+    const response = await axios.get<ActiveTask[]>(
+      `/api/project/get_active_tasks/${id}`
+    );
+    return response.data;
   } catch (e) {
     console.log(e); //FIXME
   }
@@ -63,9 +70,7 @@ export async function fetchProjectData(id: string) {
 
 export async function fetchProjectsList() {
   try {
-    const response = await axios.get<ProjectListResponse>(
-      "/api/project"
-    );
+    const response = await axios.get<ProjectListResponse>("/api/project");
     return response.data;
   } catch (e) {
     console.log(e); //FIXME
@@ -90,9 +95,7 @@ export async function fetchProjectFiles(id: string) {
 
 export async function getNotes(file_id: string) {
   try {
-    const response = await axios.get<Note[]>(
-      `/api/note/${file_id}`
-    );
+    const response = await axios.get<Note[]>(`/api/note/${file_id}`);
     return response.data;
   } catch (e) {
     console.log(e); //FIXME

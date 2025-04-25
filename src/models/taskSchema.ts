@@ -1,4 +1,8 @@
-export type TaskTypes = "transcribe" | "summary" | "frames_extract" | "summary_edit";
+export type TaskTypes =
+  | "transcribe"
+  | "summary"
+  | "frames_extract"
+  | "summary_edit";
 export type TaskStatus = "not_started" | "in_progress" | "done";
 export interface TaskCreateRequest {
   project_id: string;

@@ -1,4 +1,7 @@
-import type { AuthRefreshResponse, AuthUserInfoResponse } from "@/models/authSchema";
+import type {
+  AuthRefreshResponse,
+  AuthUserInfoResponse,
+} from "@/models/authSchema";
 import axios from "axios";
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
@@ -15,19 +18,24 @@ export const useUserStore = defineStore("user", () => {
    */
   async function fetchUserData(): Promise<void> {
     try {
-      const response = await axios.get<AuthUserInfoResponse>("/api/auth/user_info");
-        username.value = response.data.login;
+      const response = await axios.get<AuthUserInfoResponse>(
+        "/api/auth/user_info"
+      );
+      username.value = response.data.login;
     } catch (e) {
       if (axios.isAxiosError(e) && e.response?.status === 401) {
         try {
-          const tryRefreshResponse = await axios.post<AuthRefreshResponse>("/api/auth/refresh");
-          const userResponse = await axios.get<AuthUserInfoResponse>("/api/auth/user_info");
+          const tryRefreshResponse = await axios.post<AuthRefreshResponse>(
+            "/api/auth/refresh"
+          );
+          const userResponse = await axios.get<AuthUserInfoResponse>(
+            "/api/auth/user_info"
+          );
           username.value = userResponse.data.login;
         } catch {
-            username.value = "";
+          username.value = "";
         }
-      }
-      else {
+      } else {
         console.log(e);
       }
     }

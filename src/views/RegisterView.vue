@@ -33,8 +33,8 @@
             <i class="pi pi-lock" />
           </InputGroupAddon>
           <FloatLabel variant="on">
-            <InputText id="repeat-password" v-model="repeatPassword" type="password" autocomplete="current-password" name="repeat-password"
-              required class="w-full" />
+            <InputText id="repeat-password" v-model="repeatPassword" type="password" autocomplete="current-password"
+              name="repeat-password" required class="w-full" />
 
             <label for="repeat-password" class="text-sm">Повторите пароль</label>
           </FloatLabel>
