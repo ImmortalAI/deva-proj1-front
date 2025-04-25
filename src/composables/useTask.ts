@@ -54,7 +54,8 @@ export function useTask() {
     })
 
     watch(editor.taskData, async (newValue) => {
-        if (newValue.find((task) => task.id === editor.taskId)) {
+        const mainTask = newValue.find((task) => task.id === editor.taskId);
+        if (mainTask !== undefined && mainTask.done) {
             editor.taskState = "done";
             sse.disconnect();
             await editor.load_project_data(editor.project_id);
