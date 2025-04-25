@@ -1,8 +1,11 @@
 <template>
     <div class="w-full">
-        <Button v-if="editor.videoFrames.length == 0" label="Выполнить нарезку из видео" severity="secondary"
-            @click="tasks.createTask({ project_id: editor.project_id, task_type: 'frames_extract', prompt: '' })" />
-        <Button label="Загрузить изображение" severity="secondary" />
+        <div class="flex gap-4">
+            <Button v-if="editor.videoFrames.length == 0" :disabled="editor.taskState === 'in_progress'" label="Выполнить нарезку из видео" severity="secondary"
+                @click="tasks.createTask({ project_id: editor.project_id, task_type: 'frames_extract', prompt: '' })" />
+            <ProgressSpinner v-if="editor.taskState === 'in_progress'" class="!w-12 !h-12 !m-0"></ProgressSpinner>
+            <Button label="Загрузить изображение" severity="secondary" />
+        </div>
         <div class="flex items-center w-full">
             <div class="flex flex-wrap max-h-[75vh] overflow-y-scroll">
                 <div class="w-48 border-2 border-neutral-500 rounded-xl p-1 m-4 flex items-center"
@@ -37,6 +40,7 @@ import Image from 'primevue/image';
 import Button from 'primevue/button';
 import Textarea from 'primevue/textarea';
 import IftaLabel from 'primevue/iftalabel';
+import ProgressSpinner from 'primevue/progressspinner';
 import { ref } from 'vue';
 
 const editor = useEditorStore();
