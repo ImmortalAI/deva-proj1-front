@@ -14,7 +14,7 @@
                     <Image :image-class="['aspect-video', 'object-cover']" :src="getImageUrl(image.id)"
                         :alt="image.file_name" preview>
                         <template #original>
-                            <div class="flex gap-4 p-8" @click.stop="textareaContent = ''">
+                            <div class="flex gap-4 p-8" @click.stop="loadMetaImage(image.id)">
                                 <img class="w-2/3 object-contain" :src="getImageUrl(image.id)" :alt="image.file_name" />
                                 <div class="basis-1/2 flex flex-col p-8 gap-4 bg-neutral-400 dark:bg-neutral-800">
                                     <IftaLabel class="grow-1">
@@ -57,6 +57,13 @@ const videoImagesToShow = computed(() => {
     return editor.videoFrames.filter((frame) => !frame.metadata_is_hide)
 })
 const textareaContent = ref<string | null>(null);
+
+const loadMetaImage = async (imgId: string) => {
+    const index = editor.videoFrames.findIndex((frame) => frame.id === imgId);
+    if (index !== -1) {
+        textareaContent.value = editor.videoFrames[index].metadata_text;
+    }
+}
 
 const addCommentImage = async (imgId: string) => {
     const index = editor.videoFrames.findIndex((frame) => frame.id === imgId);
