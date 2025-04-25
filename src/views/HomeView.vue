@@ -12,8 +12,8 @@
     </div>
     <Message class="mb-8" size="small" severity="secondary" variant="simple">Описание необязательно.</Message>
     <div class="flex justify-end gap-2">
-      <Button type="button" label="Cancel" severity="secondary" @click="cancelProjectInit"></Button>
-      <Button type="button" label="Save" @click="createProj"></Button>
+      <Button type="button" label="Отмена" severity="secondary" @click="cancelProjectInit"></Button>
+      <Button type="button" label="Создать" @click="createProj"></Button>
     </div>
   </Dialog>
   <main class="ml-[10%] mr-[10%] mt-8">

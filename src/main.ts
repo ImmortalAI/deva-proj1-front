@@ -11,6 +11,7 @@ import 'primeicons/primeicons.css'
 import VueVideoPlayer from '@videojs-player/vue'
 import 'video.js/dist/video-js.css'
 
+
 const app = createApp(App)
 
 app.use(createPinia())

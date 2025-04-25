@@ -11,8 +11,8 @@
         <InputText id="proj-description" class="flex-auto" autocomplete="off" v-model="createdNoteText" />
       </div>
       <div class="flex justify-end gap-2">
-        <Button type="button" label="Cancel" severity="secondary" @click="cancelNoteCreate"></Button>
-        <Button type="button" label="Save" @click="saveNote"></Button>
+        <Button type="button" label="Отменить" severity="secondary" @click="cancelNoteCreate"></Button>
+        <Button type="button" label="Создать" @click="saveNote"></Button>
       </div>
     </Dialog>
     <Dialog :visible="dialogUpdateVisible" header="Создание проекта" :style="{ width: '25rem' }" :position="'top'" modal
@@ -27,9 +27,9 @@
         <InputText id="proj-description" class="flex-auto" autocomplete="off" v-model="createdNoteText" />
       </div>
       <div class="flex justify-end gap-2">
-        <Button type="button" label="Delete" severity="danger" @click="deleteCurrentNote"></Button>
-        <Button type="button" label="Cancel" severity="secondary" @click="cancelNoteCreate"></Button>
-        <Button type="button" label="Save" @click="updateCurrentNote"></Button>
+        <Button type="button" label="Удалить" severity="danger" @click="deleteCurrentNote"></Button>
+        <Button type="button" label="Отменить" severity="secondary" @click="cancelNoteCreate"></Button>
+        <Button type="button" label="Сохранить" @click="updateCurrentNote"></Button>
       </div>
     </Dialog>
     <video-player :sources="props.video_sources" controls :class="['max-w-full', 'max-h-4/5', 'w-full', 'h-4/5']"

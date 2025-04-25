@@ -14,7 +14,7 @@
                 <span>Кадры</span>
             </Tab>
         </TabList>
-        <TabPanels class="max-h-full h-11/12">
+        <TabPanels class="max-h-full h-11/12" style="background: none;">
             <TabPanel value="0" class="max-h-full h-full">
                 <div class="flex box-border max-h-full h-full">
                     <div class="p-2 min-w-3/5 w-3/5 max-w-3/5 max-h-full">
@@ -136,7 +136,7 @@ async function customMediaUploader(event: FileUploadUploaderEvent) {
 
     formData.append("file", file);
     try {
-        const response = await axios.post<FileUploadResponse>("/api/file/upload", formData, {
+        const response = await axios.post<FileUploadResponse>("/api/file", formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },

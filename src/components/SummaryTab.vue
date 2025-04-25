@@ -17,11 +17,11 @@
             </div>
             <div class="flex justify-end gap-2">
                 <Button type="button"
-                    label="Cancel"
+                    label="Отменить"
                     severity="secondary"
                     @click="cancel"></Button>
                 <Button type="button"
-                    label="Save"
+                    label="Отправить"
                     @click="createSummaryTask"></Button>
             </div>
         </Dialog>
@@ -91,7 +91,7 @@ async function saveSummary() {
     const blob = new Blob([editorStore.summaryFileContent], { type: 'text/markdown' })
     const formData = new FormData();
     formData.append('file', blob, 'summary.md');
-    const response = await axios.post("/api/file/upload", formData, {
+    const response = await axios.post("/api/file", formData, {
         headers: {
             'Content-Type': 'multipart/form-data',
         },
