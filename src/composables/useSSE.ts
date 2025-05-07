@@ -1,10 +1,11 @@
-import type { TaskSSEResponse } from "@/models/taskScheme";
+import type { TaskSSEResponse } from "@/models/taskSchema";
 import { ref, onBeforeUnmount } from "vue";
 
 export function useSSE() {
   const data = ref<TaskSSEResponse | null>(null);
   const error = ref<string | null>(null);
   let es: EventSource | null = null;
+  let reconnectTimeout: number | null = null;
 
   function connect(url: string) {
     if (es) es.close();
@@ -23,16 +24,17 @@ export function useSSE() {
       if (data.value?.done) return;
       error.value = "Connection error, retrying in 3 s...";
       es?.close();
-      setTimeout(() => connect(url), 3000);
+      reconnectTimeout = setTimeout(() => connect(url), 3000);
     };
   }
 
   function disconnect() {
+    if (reconnectTimeout) clearTimeout(reconnectTimeout);
     es?.close();
     es = null;
   }
 
   onBeforeUnmount(disconnect);
 
-  return { sseData: data, sseError: error, sseConnect: connect, sseDisconnect: disconnect };
+  return { data, error, connect, disconnect };
 }

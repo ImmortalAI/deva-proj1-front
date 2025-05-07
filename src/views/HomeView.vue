@@ -1,76 +1,19 @@
-<script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import FileElement from '@/components/FileElement.vue'
-import Dialog from 'primevue/dialog';
-import Button from 'primevue/button';
-import InputText from 'primevue/inputtext';
-import Message from 'primevue/message';
-import { useUserStore } from '@/stores/user';
-import { fetchProjects } from '@/utils/projectCRUD';
-import { useRouter } from 'vue-router';
-import { createProject } from '@/utils/projectCRUD';
-import type { ProjectInfoResponse, ProjectCreateRequest } from '@/models/projectScheme';
-import { useEditorStore } from '@/stores/editor';
-
-const userStore = useUserStore();
-const editorStore = useEditorStore();
-const router = useRouter();
-
-const availableProjects = ref<ProjectInfoResponse[]>([]);
-const dialogVisible = ref(false);
-
-const newProjectInit = () => {
-  editorStore.projectName = "Новый проект";
-  editorStore.projectDescription = "";
-  dialogVisible.value = true;
-}
-
-const cancelProjectInit = () => {
-  editorStore.reset();
-  dialogVisible.value = false;
-}
-
-const createProj = async () => {
-  const request: ProjectCreateRequest = {
-    name: editorStore.projectName,
-    description: editorStore.projectDescription,
-  }
-  const info = await createProject(request);
-  if (info) {
-    router.push(`/edit/${info.id}`);
-  } else {
-    console.log(request);
-  }
-}
-
-onMounted(async () => {
-  if (userStore.isAuthenticated) {
-    if (availableProjects.value.length > 1) {
-      availableProjects.value = [];
-    }
-    (await fetchProjects())?.forEach((project) => {
-      availableProjects.value.push(project);
-    })
-  }
-})
-</script>
-
 <template>
   <Dialog :visible="dialogVisible" header="Создание проекта" :style="{ width: '25rem' }" :position="'top'" modal
     :draggable="false" :closable="false">
     <span class="text-neutral-500 dark:text-neutral-400 block mb-8">Введите информацию о проекте.</span>
     <div class="flex items-center gap-4 mb-4">
       <label for="proj-name" class="font-semibold w-24">Название проекта</label>
-      <InputText id="proj-name" class="flex-auto" autocomplete="off" v-model="editorStore.projectName" />
+      <InputText id="proj-name" class="flex-auto" autocomplete="off" v-model="project_name" />
     </div>
     <div class="flex items-center gap-4 mb-4">
       <label for="proj-description" class="font-semibold w-24">Краткое описание</label>
-      <InputText id="proj-description" class="flex-auto" autocomplete="off" v-model="editorStore.projectDescription" />
+      <InputText id="proj-description" class="flex-auto" autocomplete="off" v-model="project_description" />
     </div>
     <Message class="mb-8" size="small" severity="secondary" variant="simple">Описание необязательно.</Message>
     <div class="flex justify-end gap-2">
-      <Button type="button" label="Cancel" severity="secondary" @click="cancelProjectInit"></Button>
-      <Button type="button" label="Save" @click="createProj"></Button>
+      <Button type="button" label="Отмена" severity="secondary" @click="cancelProjectInit"></Button>
+      <Button type="button" label="Создать" @click="createProj"></Button>
     </div>
   </Dialog>
   <main class="ml-[10%] mr-[10%] mt-8">
@@ -90,3 +33,64 @@ onMounted(async () => {
     </div>
   </main>
 </template>
+
+<script setup lang="ts">
+import { onMounted, ref } from 'vue';
+import FileElement from '@/components/FileElement.vue'
+import Dialog from 'primevue/dialog';
+import Button from 'primevue/button';
+import InputText from 'primevue/inputtext';
+import Message from 'primevue/message';
+import { useUserStore } from '@/stores/user';
+import { fetchProjectsList } from '@/utils/projectCRUD';
+import { useRouter } from 'vue-router';
+import { createProject } from '@/utils/projectCRUD';
+import type { ProjectCreateRequest, ProjectData } from '@/models/projectSchema';
+import { useEditorStore } from '@/stores/editor';
+
+const userStore = useUserStore();
+const editorStore = useEditorStore();
+const router = useRouter();
+
+const availableProjects = ref<ProjectData[]>([]);
+const dialogVisible = ref(false);
+
+const project_name = ref<string>('Новый проект');
+const project_description = ref<string>('');
+
+
+const newProjectInit = () => {
+  project_name.value = "Новый проект";
+  project_description.value = "";
+  dialogVisible.value = true;
+}
+
+const cancelProjectInit = () => {
+  editorStore.reset();
+  dialogVisible.value = false;
+}
+
+const createProj = async () => {
+  const request: ProjectCreateRequest = {
+    name: project_name.value,
+    description: project_description.value,
+  }
+  const info = await createProject(request);
+  if (info) {
+    router.push(`/edit/${info.id}`);
+  } else {
+    console.log(request);
+  }
+}
+
+onMounted(async () => {
+  if (userStore.isAuthenticated) {
+    if (availableProjects.value.length > 1) {
+      availableProjects.value = [];
+    }
+    (await fetchProjectsList())?.forEach((project) => {
+      availableProjects.value.push(project);
+    })
+  }
+})
+</script>

@@ -43,8 +43,8 @@ const router = createRouter({
     },
     {
       path: "/edit/:id",
-      name: "edit",
-      component: () => import("../views/Transcriptor.vue"),
+      name: "editor",
+      component: () => import("../views/Editor.vue"),
       meta: {
         requiresAuth: true,
       },
@@ -52,7 +52,7 @@ const router = createRouter({
   ],
 });
 
-router.beforeEach( async (to) => {
+router.beforeEach(async (to) => {
   const user = useUserStore();
   await user.fetchUserData();
   if (to.meta.requiresGuest && user.isAuthenticated) {
