@@ -8,6 +8,28 @@ import { computed, ref } from "vue";
 
 export const useUserStore = defineStore("user", () => {
   const username = ref<string>("");
+  const apiClientInternal = axios.create({
+    baseURL: import.meta.env.VITE_API_URL,
+    withCredentials: true,
+  });
+
+  /**
+   * Fetches a new access token if the one stored in the cookies is invalid
+   * or expired. If the refresh token is also invalid, the user is logged
+   * out.
+   */
+  async function refreshToken() {
+    const responseRefresh = await apiClientInternal.post<AuthRefreshResponse>(
+      "/api/auth/refresh"
+    );
+  }
+
+  /**
+   * Logs out the user and clears the username.
+   */
+  function logout() {
+    username.value = "";
+  }
 
   /**
    * Fetches user data and updates the store if the user is authenticated.
@@ -43,5 +65,5 @@ export const useUserStore = defineStore("user", () => {
 
   const isAuthenticated = computed(() => username.value !== "");
 
-  return { username, isAuthenticated, fetchUserData };
+  return { username, isAuthenticated, fetchUserData, refreshToken, logout };
 });
