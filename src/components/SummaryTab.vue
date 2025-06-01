@@ -40,7 +40,7 @@ import { useTask } from '@/composables/useTask';
 import Dialog from 'primevue/dialog';
 import Textarea from 'primevue/textarea';
 import ProgressSpinner from 'primevue/progressspinner';
-import axios from 'axios';
+import axiosI from '@/utils/axiosInstance'
 
 const editorDisabled = computed(() => {
     return editorStore.project_data?.summary_id == null || editorStore.taskState == 'in_progress' && editorStore.taskType == 'summary';
@@ -73,7 +73,7 @@ async function saveSummary() {
     const blob = new Blob([editorStore.summaryFileContent], { type: 'text/markdown' })
     const formData = new FormData();
     formData.append('file', blob, 'summary.md');
-    const response = await axios.post("/api/file", formData, {
+    const response = await axiosI.post("/file", formData, {
         headers: {
             'Content-Type': 'multipart/form-data',
         },
@@ -103,7 +103,7 @@ config({
             if (srcIndex >= 0) {
                 const src = token.attrs![srcIndex][1];
                 //if (isValidUUID(src))
-                    token.attrs![srcIndex][1] = `/api/file/download/${src}`;
+                    token.attrs![srcIndex][1] = `/file/download/${src}`;
             }
             // Вызываем оригинал
             return defaultRender(tokens, idx, options, env, self);

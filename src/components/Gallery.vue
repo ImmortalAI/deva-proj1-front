@@ -46,14 +46,13 @@ import Textarea from 'primevue/textarea';
 import IftaLabel from 'primevue/iftalabel';
 import ProgressSpinner from 'primevue/progressspinner';
 import InputText from 'primevue/inputtext';
-import { computed, onMounted, ref } from 'vue';
-import axios from 'axios';
+import { computed, ref } from 'vue';
 import type { FilePatchRequest } from '@/models/fileSchema';
-
+import axiosI from '@/utils/axiosInstance'
 const editor = useEditorStore();
 const tasks = useTask();
 
-const getImageUrl = (imgId: string) => `/api/file/download/${imgId}`
+const getImageUrl = (imgId: string) => `/file/download/${imgId}`
 
 const numberToTimeStr = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
@@ -88,7 +87,7 @@ const addCommentImage = async (imgId: string) => {
     const index = editor.videoFrames.findIndex((frame) => frame.id === imgId);
     if (index !== -1 && textareaContent.value) {
         editor.videoFrames[index].metadata_text = textareaContent.value;
-        await axios.patch(`/api/file/${imgId}`, { metadata_text: textareaContent.value } as FilePatchRequest).catch(e => console.log(e));
+        await axiosI.patch(`/file/${imgId}`, { metadata_text: textareaContent.value } as FilePatchRequest).catch(e => console.log(e));
         textareaContent.value = "";
         timecodeText.value = "";
         const imgComp = imageElRefs.value[imgId];
@@ -100,7 +99,7 @@ const hideImage = async (imgId: string) => {
     const index = editor.videoFrames.findIndex((frame) => frame.id === imgId);
     if (index !== -1) {
         editor.videoFrames[index].metadata_is_hide = true;
-        await axios.patch(`/api/file/${imgId}`, { metadata_is_hide: true } as FilePatchRequest).catch(e => console.log(e));
+        await axiosI.patch(`/file/${imgId}`, { metadata_is_hide: true } as FilePatchRequest).catch(e => console.log(e));
         const imgComp = imageElRefs.value[imgId];
         if (imgComp?.hide) imgComp.hide();
     }

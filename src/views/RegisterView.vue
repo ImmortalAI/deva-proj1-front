@@ -64,7 +64,7 @@ import { RouterLink, useRouter } from 'vue-router'
 import { FloatLabel, InputGroup, InputGroupAddon, InputText, Button } from 'primevue';
 import type { AuthRegisterResponse, RegisterRequest } from '@/models/authSchema';
 import type { ErrorResponse } from '@/models/errorSchema';
-import axios from 'axios';
+import axiosI from '@/utils/axiosInstance'
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -87,16 +87,12 @@ async function register() {
   }
 
   try {
-    await axios.post<AuthRegisterResponse>("/api/auth/register", request);
+    await axiosI.post<AuthRegisterResponse>("/auth/register", request);
     router.push("/login");
-  } catch (e) {
-    if (axios.isAxiosError(e) && e.response?.status === 401) {
+  } catch (e: any) {
       const data = e.response.data as ErrorResponse;
       failed.value.isFailed = true;
       failed.value.msg = data.detail || "Произошла ошибка";
-    } else {
-      console.log(e); //FIXME
-    }
   }
 
   // if (response.ok) {

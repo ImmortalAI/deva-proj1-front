@@ -73,7 +73,8 @@ import type { FileUploadUploaderEvent } from 'primevue';
 
 import { computed, onBeforeMount, onMounted, onUnmounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import axios, { type AxiosProgressEvent } from 'axios';
+import type { AxiosProgressEvent } from 'axios';
+import axiosI from '@/utils/axiosInstance'
 // #endregion
 // #region Local Imports
 import TranscriptionList from '@/components/TranscriptionList.vue';
@@ -122,7 +123,7 @@ const uploadFileProgress = ref(0);
 const video_sources = computed(() => {
     return [
         {
-            src: `/api/file/video/${editor.project_data?.origin_file_id}`,
+            src: `/file/video/${editor.project_data?.origin_file_id}`,
             type: 'video/mp4'
         }
     ]
@@ -137,7 +138,7 @@ async function customMediaUploader(event: FileUploadUploaderEvent) {
 
     formData.append("file", file);
     try {
-        const response = await axios.post<FileUploadResponse>("/api/file", formData, {
+        const response = await axiosI.post<FileUploadResponse>("/file", formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },

@@ -4,10 +4,7 @@ import vue from '@vitejs/plugin-vue';
 import vueDevTools from 'vite-plugin-vue-devtools';
 import tailwindcss from '@tailwindcss/vite';
 
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd());
-
-  return {
+export default defineConfig({
     plugins: [
       vue(),
       vueDevTools(),
@@ -21,10 +18,9 @@ export default defineConfig(({ mode }) => {
     server: {
       proxy: {
         '/api': {
-          target: env.VITE_API_BASE_URL,
+          target: 'http://localhost:8000',
           changeOrigin: true,
         },
       },
     },
-  };
-});
+  });

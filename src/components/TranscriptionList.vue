@@ -37,7 +37,7 @@ import { useEditorStore } from '@/stores/editor';
 import ProgressBar from 'primevue/progressbar';
 import { onMounted, ref, watch } from 'vue';
 import Button from 'primevue/button';
-import axios from 'axios';
+import axiosI from '@/utils/axiosInstance'
 import { useSSE } from '@/composables/useSSE';
 import timeConverter from '@/utils/timeConverter';
 import ScrollPanel from 'primevue/scrollpanel';
@@ -76,7 +76,7 @@ const downloadTranscription = async () => {
     if (editorStore.project_data?.transcription_id === null) {
         return;
     }
-    await axios.get<TimecodeFile[]>(`/api/file/download/${editorStore.project_data?.transcription_id}`).then((response) => {
+    await axiosI.get<TimecodeFile[]>(`/file/download/${editorStore.project_data?.transcription_id}`).then((response) => {
         response.data.forEach((item) => {
             transcriptionItems.value.push(item);
         });

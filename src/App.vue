@@ -3,7 +3,6 @@ import { RouterLink, RouterView, useRouter } from 'vue-router'
 import ToggleButton from 'primevue/togglebutton';
 import Button from 'primevue/button'
 import { useUserStore } from './stores/user';
-import logoutUser from './utils/logoutUser';
 import { useTheme } from './composables/useTheme';
 
 const router = useRouter();
@@ -12,7 +11,7 @@ const theming = useTheme();
 
 async function handleAuth() {
   if (userStore.isAuthenticated) {
-    await logoutUser();
+    await userStore.logout();
     router.push('/'); 
   }
   else {

@@ -3,10 +3,9 @@ import type {
   TaskCreateResponse,
 } from "@/models/taskSchema";
 import { useEditorStore } from "@/stores/editor";
-import axios from "axios";
+import axiosI from '@/utils/axiosInstance'
 import { useSSE } from "./useSSE";
 import { computed, ref, watch } from "vue";
-import { fetchProjectData } from "@/utils/projectCRUD";
 
 export function useTask() {
   const editor = useEditorStore();
@@ -28,15 +27,15 @@ export function useTask() {
       editor.taskType = null;
     }
     try {
-      const response = await axios.post<TaskCreateResponse>(
-        "/api/task",
+      const response = await axiosI.post<TaskCreateResponse>(
+        "/task",
         taskCreateRequest
       );
       editor.taskId = response.data.id;
       editor.taskType = taskCreateRequest.task_type;
       editor.taskState = "in_progress";
       subtaskCount.value = response.data.subtask_count;
-      sse.connect(`/api/task/sse/${editor.taskId}`);
+      sse.connect(`/task/sse/${editor.taskId}`);
       return true;
     } catch (e) {
       console.log(e); //FIXME

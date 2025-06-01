@@ -50,7 +50,7 @@ apiClient.interceptors.response.use(
         return apiClient(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError);
-        userStore.logout();
+        await userStore.logout();
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

@@ -5,11 +5,12 @@ import type {
 import axios from "axios";
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
+import axiosI from "@/utils/axiosInstance";
 
 export const useUserStore = defineStore("user", () => {
   const username = ref<string>("");
   const apiClientInternal = axios.create({
-    baseURL: import.meta.env.VITE_API_URL,
+    baseURL: import.meta.env.VITE_API_BASE_URL,
     withCredentials: true,
   });
 
@@ -19,47 +20,31 @@ export const useUserStore = defineStore("user", () => {
    * out.
    */
   async function refreshToken() {
-    const responseRefresh = await apiClientInternal.post<AuthRefreshResponse>(
-      "/api/auth/refresh"
-    );
+    await apiClientInternal.post<AuthRefreshResponse>("/auth/refresh");
   }
 
   /**
-   * Logs out the user and clears the username.
+   * Logs the user out. This will clear the user's session from the backend,
+   * and update the store to reflect that the user is no longer logged in.
    */
-  function logout() {
+  async function logout() {
+    await apiClientInternal.post("/auth/logout");
     username.value = "";
   }
 
   /**
-   * Fetches user data and updates the store if the user is authenticated.
-   * If the user is not authenticated, this function will attempt to refresh the token.
-   * If the token is refreshed successfully, this function will fetch the user data and update the store.
-   * If the token cannot be refreshed, this function will update the store with an empty string.
-   * @returns true if the store was updated, false otherwise.
+   * Fetches the authenticated user's data from the server and updates
+   * the store with the retrieved username. If the request fails, the
+   * error is logged to the console.
    */
   async function fetchUserData(): Promise<void> {
     try {
-      const response = await axios.get<AuthUserInfoResponse>(
-        "/api/auth/user_info"
+      const response = await axiosI.get<AuthUserInfoResponse>(
+        "/auth/user_info"
       );
       username.value = response.data.login;
     } catch (e) {
-      if (axios.isAxiosError(e) && e.response?.status === 401) {
-        try {
-          const tryRefreshResponse = await axios.post<AuthRefreshResponse>(
-            "/api/auth/refresh"
-          );
-          const userResponse = await axios.get<AuthUserInfoResponse>(
-            "/api/auth/user_info"
-          );
-          username.value = userResponse.data.login;
-        } catch {
-          username.value = "";
-        }
-      } else {
-        console.log(e);
-      }
+      console.log(e);
     }
   }
 

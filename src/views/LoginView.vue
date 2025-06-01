@@ -51,7 +51,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { FloatLabel, InputGroup, InputGroupAddon, InputText, Button } from 'primevue';
 import type { AuthLoginResponse, AuthLoginRequest } from '@/models/authSchema';
-import axios from 'axios';
+import axiosI from '@/utils/axiosInstance'
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -66,16 +66,12 @@ async function login() {
   }
 
   try {
-    await axios.post<AuthLoginResponse>("/api/auth/login", request);
+    await axiosI.post<AuthLoginResponse>("/auth/login", request);
     await userStore.fetchUserData();
     router.push("/");
   } catch (e) {
-    if (axios.isAxiosError(e) && e.response?.status === 401) {
       isFailed.value = true;
       password.value = '';
-    } else {
-      console.log(e); //FIXME
-    }
   }
 }
 </script>

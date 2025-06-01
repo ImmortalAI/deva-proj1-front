@@ -14,9 +14,9 @@ import {
   getNotes,
   projectActiveTasks,
 } from "@/utils/projectCRUD";
-import axios from "axios";
+import axiosI from '@/utils/axiosInstance'
 import { defineStore } from "pinia";
-import { computed, reactive, ref } from "vue";
+import { reactive, ref } from "vue";
 
 export const useEditorStore = defineStore("editor", () => {
   const project_id = ref<string>("");
@@ -71,8 +71,8 @@ export const useEditorStore = defineStore("editor", () => {
         ) as FileData;
         if (summary_data) {
           summaryFile.value = summary_data;
-          const response = await axios.get<string>(
-            `/api/file/download/${summary_data.id}`
+          const response = await axiosI.get<string>(
+            `/file/download/${summary_data.id}`
           );
           summaryFileContent.value = response.data;
         }
