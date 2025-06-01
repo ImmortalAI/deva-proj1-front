@@ -42,8 +42,8 @@
                             </template>
                         </FileUpload>
                         <div v-else class="flex flex-col max-w-full max-h-full w-full h-full">
-                            <!-- <audio :src="editor.mediaFileDlUrl"></audio> -->
-                            <VideoPlayerWithTimeline :video_sources="video_sources" ref="player" />
+                            <audio v-if="isAudio()" :src="audio_source"></audio>
+                            <VideoPlayerWithTimeline v-else :video_sources="video_sources" ref="player" />
                         </div>
                     </div>
                     <TranscriptionList class="p-6 grow-1 h-full overflow-y-scrollx" @setVideoTiming="setTimecode">
@@ -78,6 +78,7 @@ import axiosI from '@/utils/axiosInstance'
 import { useTheme } from '@/composables/useTheme';
 import type { FileUploadResponse } from '@/models/fileSchema';
 import { useEditorStore } from '@/stores/editor';
+import VideoPlayerWithTimeline from "@/components/VideoPlayerWithTimeline.vue";
 
 // #endregion
 const player = ref()
@@ -113,6 +114,11 @@ onUnmounted(() => {
 
 const uploadFileProgress = ref(0);
 
+function isAudio() {
+    console.log(editor.mediaFile!!.file_type)
+    return editor.mediaFile!!.file_type.startsWith("audio")
+}
+
 const video_sources = computed(() => {
     return [
         {
@@ -120,6 +126,10 @@ const video_sources = computed(() => {
             type: 'video/mp4'
         }
     ]
+})
+
+const audio_source = computed(() => {
+    return `/file/download/${editor.project_data?.origin_file_id}`
 })
 
 async function customMediaUploader(event: FileUploadUploaderEvent) {
