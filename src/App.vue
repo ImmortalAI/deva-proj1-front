@@ -39,4 +39,6 @@ async function handleAuth() {
   <div class="h-11/12">
     <RouterView />
   </div>
+  <Toast/>
+  <ConfirmDialog/>
 </template>

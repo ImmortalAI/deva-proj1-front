@@ -53,3 +53,20 @@ export interface ProjectPatchRequest {
 export interface ProjectGetActiveTasksResponse {
   // TODO
 }
+
+export interface ProjectSharePostRequest {
+  login: string;
+  project_id: string;
+}
+
+export interface ProjectShareDeleteRequest {
+  login: string;
+  project_id: string;
+}
+
+export interface ProjectCollaboratorData {
+  id: string;
+  login: string;
+}
+
+export type ProjectShareGetResponse = ProjectCollaboratorData[];
