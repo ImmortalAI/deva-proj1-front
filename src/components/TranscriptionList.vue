@@ -33,14 +33,10 @@
 <script setup lang="ts">
 import type { TimecodeFile } from '@/models/fileSchema';
 import { useEditorStore } from '@/stores/editor';
-
-import ProgressBar from 'primevue/progressbar';
 import { onMounted, ref, watch } from 'vue';
-import Button from 'primevue/button';
 import axiosI from '@/utils/axiosInstance'
 import { useSSE } from '@/composables/useSSE';
 import timeConverter from '@/utils/timeConverter';
-import ScrollPanel from 'primevue/scrollpanel';
 import { useTask } from '@/composables/useTask';
 import { useRoute } from 'vue-router';
 

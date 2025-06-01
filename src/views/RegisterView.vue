@@ -61,13 +61,11 @@
 import { useUserStore } from '@/stores/user';
 import { ref } from 'vue';
 import { RouterLink, useRouter } from 'vue-router'
-import { FloatLabel, InputGroup, InputGroupAddon, InputText, Button } from 'primevue';
 import type { AuthRegisterResponse, RegisterRequest } from '@/models/authSchema';
 import type { ErrorResponse } from '@/models/errorSchema';
 import axiosI from '@/utils/axiosInstance'
 
 const router = useRouter();
-const userStore = useUserStore();
 const username = ref();
 const password = ref();
 const repeatPassword = ref();

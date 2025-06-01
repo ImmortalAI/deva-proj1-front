@@ -36,11 +36,6 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import FileElement from '@/components/FileElement.vue'
-import Dialog from 'primevue/dialog';
-import Button from 'primevue/button';
-import InputText from 'primevue/inputtext';
-import Message from 'primevue/message';
 import { useUserStore } from '@/stores/user';
 import { fetchProjectsList } from '@/utils/projectCRUD';
 import { useRouter } from 'vue-router';

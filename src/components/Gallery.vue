@@ -40,12 +40,6 @@
 <script setup lang="ts">
 import { useTask } from '@/composables/useTask';
 import { useEditorStore } from '@/stores/editor';
-import Image from 'primevue/image';
-import Button from 'primevue/button';
-import Textarea from 'primevue/textarea';
-import IftaLabel from 'primevue/iftalabel';
-import ProgressSpinner from 'primevue/progressspinner';
-import InputText from 'primevue/inputtext';
 import { computed, ref } from 'vue';
 import type { FilePatchRequest } from '@/models/fileSchema';
 import axiosI from '@/utils/axiosInstance'

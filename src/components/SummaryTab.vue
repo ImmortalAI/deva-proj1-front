@@ -37,9 +37,6 @@ import 'md-editor-v3/lib/style.css';
 import RU from '@vavt/cm-extension/dist/locale/ru'
 import { useEditorStore } from '@/stores/editor';
 import { useTask } from '@/composables/useTask';
-import Dialog from 'primevue/dialog';
-import Textarea from 'primevue/textarea';
-import ProgressSpinner from 'primevue/progressspinner';
 import axiosI from '@/utils/axiosInstance'
 
 const editorDisabled = computed(() => {

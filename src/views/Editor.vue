@@ -48,7 +48,6 @@
             </TabPanel>
             <TabPanel value="1" class="max-h-full h-full">
                 <SummaryTab></SummaryTab>
-
             </TabPanel>
             <TabPanel value="2" class="max-h-full h-full">
                 <Gallery></Gallery>
@@ -59,14 +58,6 @@
 
 <script setup lang="ts">
 // #region PrimeVue Imports
-import Tabs from 'primevue/tabs';
-import Tab from 'primevue/tab';
-import TabPanel from 'primevue/tabpanel';
-import TabPanels from 'primevue/tabpanels';
-import TabList from 'primevue/tablist';
-import FileUpload from 'primevue/fileupload';
-import ProgressBar from 'primevue/progressbar';
-import Button from 'primevue/button';
 import type { FileUploadUploaderEvent } from 'primevue';
 // #endregion
 // #region Libs Imports
@@ -77,13 +68,9 @@ import type { AxiosProgressEvent } from 'axios';
 import axiosI from '@/utils/axiosInstance'
 // #endregion
 // #region Local Imports
-import TranscriptionList from '@/components/TranscriptionList.vue';
-import Gallery from '@/components/Gallery.vue';
-import VideoPlayerWithTimeline from '@/components/VideoPlayerWithTimeline.vue';
 import { useTheme } from '@/composables/useTheme';
 import type { FileUploadResponse } from '@/models/fileSchema';
 import { useEditorStore } from '@/stores/editor';
-import SummaryTab from '@/components/SummaryTab.vue';
 
 // #endregion
 const player = ref()

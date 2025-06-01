@@ -6,8 +6,7 @@
 </template>
 
 <script lang="ts" setup>
-import { useEditorStore } from '@/stores/editor';
-import { computed, onMounted, ref } from 'vue';
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const props = defineProps({
@@ -26,10 +25,8 @@ const props = defineProps({
 });
 
 const router = useRouter();
-const editorStore = useEditorStore();
 
 const divElement = ref<HTMLDivElement | null>(null)
-const toRef = computed(() => `/edit/${props.idFile}`)
 
 const openProject = () => {
     router.push(`/edit/${props.idFile}`);

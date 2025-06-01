@@ -51,18 +51,17 @@
     </video>
 
     <div class="flex flex-col p-4 items-center">
-      <timeline :currentTime="currentTime" :endTime="duration" :marks="timeline_notes" @create_note="addNote"
-        @mark_click="clickNote"></timeline>
+      <Timeline :currentTime="currentTime" :endTime="duration" :marks="timeline_notes" @create_note="addNote"
+        @mark_click="clickNote"></Timeline>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, defineProps, defineEmits } from 'vue';
-import Button from 'primevue/button';
-import Dialog from 'primevue/dialog';
+import { computed, ref, watch } from 'vue';
 import { InputText } from 'primevue';
 import { useMediaControls } from '@vueuse/core';
+// @ts-ignore
 import Timeline from '@/components/Timeline.vue';
 import { useEditorStore } from '@/stores/editor';
 import { createNote, deleteNote, updateNote } from '@/utils/projectCRUD';

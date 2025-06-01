@@ -49,7 +49,6 @@
 import { useUserStore } from '@/stores/user';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { FloatLabel, InputGroup, InputGroupAddon, InputText, Button } from 'primevue';
 import type { AuthLoginResponse, AuthLoginRequest } from '@/models/authSchema';
 import axiosI from '@/utils/axiosInstance'
 
