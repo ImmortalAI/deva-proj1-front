@@ -34,14 +34,6 @@ const router = createRouter({
       },
     },
     {
-      path: "/create",
-      name: "create",
-      component: () => import("../views/CreateProjectView.vue"),
-      meta: {
-        requiresAuth: true,
-      },
-    },
-    {
       path: "/edit/:id",
       name: "editor",
       component: () => import("../views/Editor.vue"),
