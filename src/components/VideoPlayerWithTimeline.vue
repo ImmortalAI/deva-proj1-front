@@ -34,94 +34,114 @@
         <Button type="button" label="Сохранить" @click="updateCurrentNote"></Button>
       </div>
     </Dialog>
-    <video-player :sources="props.video_sources" controls :class="['max-w-full', 'max-h-4/5', 'w-full', 'h-4/5']"
-      v-model:currentTime="currentTime" v-bind:duration="duration" @mounted="handleMounted">
-    </video-player>
+
+    <video
+        ref="videoRef"
+        class="max-w-full max-h-4/5 w-full h-4/5"
+        controls
+        @loadedmetadata="onLoadedMetadata"
+    >
+      <source
+          v-for="(source, index) in props.video_sources"
+          :key="index"
+          :src="source.src"
+          :type="source.type"
+      />
+      Your browser does not support the video tag.
+    </video>
+
     <div class="flex flex-col p-4 items-center">
       <timeline :currentTime="currentTime" :endTime="duration" :marks="timeline_notes" @create_note="addNote"
         @mark_click="clickNote"></timeline>
     </div>
   </div>
-
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, defineProps, defineEmits } from 'vue';
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
 import { InputText } from 'primevue';
-import { VideoPlayer, type VideoPlayerState } from '@videojs-player/vue'
-// @ts-ignore
+import { useMediaControls } from '@vueuse/core';
 import Timeline from '@/components/Timeline.vue';
-import videojs from 'video.js'
 import { useEditorStore } from '@/stores/editor';
 import { createNote, deleteNote, updateNote } from '@/utils/projectCRUD';
 
-type VideoJsPlayer = ReturnType<typeof videojs>
+interface Props {
+  video_sources: { src: string, type: string }[];
+}
+
+const props = defineProps<Props>();
+const emits = defineEmits(['moveStart', 'moveEnd']);
 
 const dialogSaveVisible = ref(false);
 const dialogUpdateVisible = ref(false);
 const editorStore = useEditorStore();
 
-interface Props {
-  video_sources: object[]
-}
+const createdNoteText = ref('');
+const createdNoteTime = ref(0);
+const updateNoteId = ref('');
 
-const notes = ref<Object[]>([]);
-const createdNoteText = ref<string>('');
-const createdNoteTime = ref<number>(0);
-const updateNoteId = ref<string>('');
+const videoRef = ref<HTMLVideoElement | null>(null);
+const { currentTime: mediaCurrentTime, duration: mediaDuration } = useMediaControls(videoRef);
 
+const currentTime = computed({
+  get: () => mediaCurrentTime.value ?? 0,
+  set: (val: number) => {
+    mediaCurrentTime.value = val;
+  }
+});
 
-const timeline_notes = computed(() => {
-  return editorStore.notes.map((note) => { return { id: note.id, time: note.start_time_code } });
-})
+const duration = computed(() => mediaDuration.value ?? 0);
+
+const onLoadedMetadata = () => {
+  resetBoundaries();
+};
+
+const timeline_notes = computed(() =>
+    editorStore.notes.map(note => ({ id: note.id, time: note.start_time_code }))
+);
 
 function addNote(time: number) {
-  if (editorStore.mediaFile == null) return;
-  createdNoteTime.value = time
+  if (!editorStore.mediaFile) return;
+  createdNoteTime.value = time;
   createdNoteText.value = '';
   dialogSaveVisible.value = true;
 }
 
 function clickNote(id: string) {
-  if (editorStore.mediaFile == null) return;
-  const note = editorStore.notes.find((note) => note.id === id);
-  if (note == null) return;
+  const note = editorStore.notes.find(n => n.id === id);
+  if (!note) return;
   createdNoteTime.value = note.start_time_code;
   createdNoteText.value = note.text;
-  updateNoteId.value = id
+  updateNoteId.value = id;
   dialogUpdateVisible.value = true;
 }
 
 async function deleteCurrentNote() {
-  if (editorStore.mediaFile == null) return;
+  if (!editorStore.mediaFile) return;
   await deleteNote(updateNoteId.value);
-  createdNoteTime.value = 0;
-  createdNoteText.value = '';
   dialogUpdateVisible.value = false;
   await editorStore.load_notes(editorStore.mediaFile.id);
 }
 
 async function saveNote() {
-  if (editorStore.mediaFile == null) return;
+  if (!editorStore.mediaFile) return;
   await createNote({
     file_id: editorStore.mediaFile.id,
     text: createdNoteText.value,
     start_time_code: createdNoteTime.value,
     end_time_code: createdNoteTime.value
-  })
-  await editorStore.load_notes(editorStore.mediaFile.id);
+  });
   dialogSaveVisible.value = false;
+  await editorStore.load_notes(editorStore.mediaFile.id);
 }
 
 async function updateCurrentNote() {
-  if (editorStore.mediaFile == null) return;
-  await updateNote(updateNoteId.value, {
-    text: createdNoteText.value
-  })
-  await editorStore.load_notes(editorStore.mediaFile.id);
+  if (!editorStore.mediaFile) return;
+  await updateNote(updateNoteId.value, { text: createdNoteText.value });
   dialogUpdateVisible.value = false;
+  await editorStore.load_notes(editorStore.mediaFile.id);
 }
 
 function cancelNoteCreate() {
@@ -131,123 +151,70 @@ function cancelNoteCreate() {
   dialogUpdateVisible.value = false;
 }
 
-
-const state = ref<VideoPlayerState | null>(null)
-const player = ref<VideoJsPlayer | null>(null)
-
-const props = defineProps<Props>();
-
-const emits = defineEmits<{
-  (e: "moveStart", newStart: number): void;
-  (e: "moveEnd", newEnd: number): void;
-}>();
-
-const handleMounted = (payload: any) => {
-  state.value = payload.state
-  player.value = payload.player
-}
-
 const timeStrToNumber = (time: string): number => {
-  const [hours, minutes, seconds] = time.split(':').map(Number);
-  return (hours * 3600) + (minutes * 60) + seconds;
+  const [h, m, s] = time.split(':').map(Number);
+  return h * 3600 + m * 60 + s;
 };
 
 const numberToTimeStr = (seconds: number): string => {
-  const hours = Math.floor(seconds / 3600);
-  const remaining = seconds % 3600;
-  const minutes = Math.floor(remaining / 60);
-  const secs = Math.floor(remaining % 60);
-  return [
-    hours.toString().padStart(2, '0'),
-    minutes.toString().padStart(2, '0'),
-    secs.toString().padStart(2, '0')
-  ].join(':');
+  const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
+  const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+  const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+  return `${h}:${m}:${s}`;
 };
 
-const isValidTime = (val: string): boolean => {
-  if (!/^\d{1,2}:\d{2}:\d{2}$/.test(val)) return false;
-  const [h, m, s] = val.split(':').map(Number);
-  return h >= 0 && h <= 99 && m >= 0 && m <= 59 && s >= 0 && s <= 59;
-};
+const isValidTime = (val: string) => /^\d{1,2}:\d{2}:\d{2}$/.test(val);
 
-const duration = computed(() => {
-  return state.value?.duration || 0;
-});
+const pointer = ref(0);
+watch(pointer, val => currentTime.value = val);
 
-watch(duration, () => {
-  resetBoundaries();
-});
+const rawStart = ref(0);
+const rawEnd = ref(0);
 
-const currentTime = computed({
-  get: () => {
-    return state.value?.currentTime || 0;
-  },
-  set: (val: number) => {
-    if (!player.value) return;
-    player.value.currentTime(val);
-  }
-});
-
-const pointer = ref<number>(0);
-
-const rawStart = ref<number>(0);
-const rawEnd = ref<number>(duration.value);
-
-const startStr = ref<string>(numberToTimeStr(0));
-const endStr = ref<string>(numberToTimeStr(duration.value));
+const startStr = ref('00:00:00');
+const endStr = ref('00:00:00');
 
 const lastValidStart = ref(startStr.value);
 const lastValidEnd = ref(endStr.value);
 
-const currentTimeStr = computed(() => {
-  return numberToTimeStr(currentTime.value);
-});
-
-
 const resetBoundaries = () => {
   rawStart.value = 0;
-  rawEnd.value = duration.value || 0;
+  rawEnd.value = duration.value;
   startStr.value = numberToTimeStr(0);
-  endStr.value = numberToTimeStr(duration.value || 0);
+  endStr.value = numberToTimeStr(duration.value);
   lastValidStart.value = startStr.value;
   lastValidEnd.value = endStr.value;
-}
+};
 
-watch(pointer, (newVal) => {
-  currentTime.value = newVal;
-});
-
-watch(startStr, (newVal) => {
+watch(startStr, newVal => {
   if (isValidTime(newVal)) {
     const seconds = timeStrToNumber(newVal);
-    if (seconds >= 0 && seconds < rawEnd.value && seconds <= (duration.value || 0)) {
+    if (seconds >= 0 && seconds < rawEnd.value && seconds <= duration.value) {
       rawStart.value = seconds;
       lastValidStart.value = newVal;
-      emits("moveStart", seconds);
+      emits('moveStart', seconds);
       return;
     }
   }
   startStr.value = lastValidStart.value;
 });
 
-watch(endStr, (newVal) => {
+watch(endStr, newVal => {
   if (isValidTime(newVal)) {
     const seconds = timeStrToNumber(newVal);
-    if (seconds <= (duration.value || 0) && seconds > rawStart.value) {
+    if (seconds <= duration.value && seconds > rawStart.value) {
       rawEnd.value = seconds;
       lastValidEnd.value = newVal;
-      emits("moveEnd", seconds);
+      emits('moveEnd', seconds);
       return;
     }
   }
   endStr.value = lastValidEnd.value;
 });
 
-function setVideoTimecode(seconds: number) {
-  currentTime.value = seconds;
-}
 defineExpose({
-  setVideoTimecode
-})
-
+  setVideoTimecode: (seconds: number) => {
+    currentTime.value = seconds;
+  }
+});
 </script>
