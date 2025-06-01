@@ -78,7 +78,6 @@ import axiosI from '@/utils/axiosInstance'
 // #endregion
 // #region Local Imports
 import TranscriptionList from '@/components/TranscriptionList.vue';
-import Timeline from '@/components/VideoPlayerWithTimeline.vue';
 import Gallery from '@/components/Gallery.vue';
 import VideoPlayerWithTimeline from '@/components/VideoPlayerWithTimeline.vue';
 import { useTheme } from '@/composables/useTheme';
