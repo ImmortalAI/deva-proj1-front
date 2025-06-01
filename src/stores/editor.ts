@@ -1,7 +1,7 @@
 import { useSSE } from "@/composables/useSSE";
 import type { FileData } from "@/models/fileSchema";
 import type { Note } from "@/models/noteSchema";
-import type { ProjectData } from "@/models/projectSchema";
+import { EmptyProjectData, type ProjectData } from "@/models/projectSchema";
 import type {
   TaskSSEResponse,
   TaskTypes,
@@ -21,7 +21,7 @@ import { reactive, ref } from "vue";
 export const useEditorStore = defineStore("editor", () => {
   const project_id = ref<string>("");
 
-  const project_data = ref<ProjectData | null>(null);
+  const project_data = ref<ProjectData>({ ...EmptyProjectData });
   const mediaFile = ref<FileData | null>(null);
   const transcriptionFile = ref<FileData | null>(null);
   const summaryFile = ref<FileData | null>(null);
@@ -98,7 +98,7 @@ export const useEditorStore = defineStore("editor", () => {
   }
 
   function reset() {
-    project_data.value = null;
+    project_data.value = { ...EmptyProjectData };
     mediaFile.value = null;
     transcriptionFile.value = null;
 

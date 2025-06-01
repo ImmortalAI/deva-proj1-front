@@ -13,6 +13,10 @@
                 <i class="pi pi-images mr-2"></i>
                 <span>Кадры</span>
             </Tab>
+            <Tab value="3">
+                <i class="pi pi-cog mr-2"></i>
+                <span>Настройки</span>
+            </Tab>
         </TabList>
         <TabPanels class="max-h-full h-11/12" style="background: none;">
             <TabPanel value="0" class="max-h-full h-full">
@@ -51,6 +55,9 @@
             </TabPanel>
             <TabPanel value="2" class="max-h-full h-full">
                 <Gallery></Gallery>
+            </TabPanel>
+            <TabPanel value="3" class="max-h-full h-full">
+                <ProjectSettings></ProjectSettings>
             </TabPanel>
         </TabPanels>
     </Tabs>

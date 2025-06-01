@@ -16,6 +16,18 @@ export interface ProjectData {
   frames_extract_done: boolean;
 }
 
+export const EmptyProjectData: ProjectData = {
+  id: "",
+  name: "",
+  description: "",
+  created_date: "",
+  last_modified_date: "",
+  origin_file_id: null,
+  transcription_id: null,
+  summary_id: null,
+  frames_extract_done: false,
+};
+
 export interface ProjectCreateRequest {
   name: string;
   description: string;
@@ -25,10 +37,7 @@ export type ProjectCreateResponse = ProjectData;
 
 export type ProjectDeleteResponse = ProjectSingleMessage;
 
-export interface ProjectPatchResponse {
-  name: string | null;
-  description: string | null;
-}
+export type ProjectPatchResponse = ProjectSingleMessage;
 
 export type ProjectGetResponse = ProjectData;
 
