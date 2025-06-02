@@ -1,5 +1,5 @@
 <template>
-  <div class="flex items-center justify-center min-h-screen">
+  <div class="flex items-center justify-center h-full">
     <div class="p-6 rounded-xl w-full max-w-sm border">
       <form class="space-y-4 flex flex-col items-center">
         <p class="text-2xl">Вход</p>
