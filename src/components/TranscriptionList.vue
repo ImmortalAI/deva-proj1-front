@@ -1,13 +1,13 @@
 <template>
     <div class="bg-neutral-800">
         <div v-if="editorStore.transcriptionFile == null" class="w-full h-full flex items-center justify-center">
-            <Button v-if="editorStore.taskState === 'not_started'" :disabled="editorStore.mediaFile == null"
-                @click="tasks.createTask({ project_id: editorStore.project_id, task_type: 'transcribe', prompt: '' })"
+            <Button v-if="!editorStore.transcribeInProgress" :disabled="editorStore.mediaFile == null"
+                @click="editorStore.createTask({ task_type: 'transcribe', prompt: '' })"
                 class="w-fit h-fit p-0 rounded-full">Транскрибировать</Button>
             <div class="w-4/5" v-else>
                 <p>Обработка...</p>
-                <ProgressBar :mode="tasks.transcribeTaskProgress.value == 0 ? 'indeterminate' : 'determinate'"
-                    :value="tasks.transcribeTaskProgress.value">{{ Math.floor(tasks.transcribeTaskProgress.value) }} %
+                <ProgressBar :mode="editorStore.transcribeTaskProgress == 0 ? 'indeterminate' : 'determinate'"
+                    :value="editorStore.transcribeTaskProgress">{{ Math.floor(editorStore.transcribeTaskProgress) }} %
                 </ProgressBar>
             </div>
         </div>
@@ -35,15 +35,12 @@ import type { TimecodeFile } from '@/models/fileSchema';
 import { useEditorStore } from '@/stores/editor';
 import { onMounted, ref, watch } from 'vue';
 import axiosI from '@/utils/axiosInstance'
-import { useSSE } from '@/composables/useSSE';
 import timeConverter from '@/utils/timeConverter';
-import { useTask } from '@/composables/useTask';
 import { useRoute } from 'vue-router';
 import type { ErrorResponse } from '@/models/errorSchema';
 import { showAxiosErrorToast } from '@/utils/toastService';
 
 const editorStore = useEditorStore();
-const tasks = useTask();
 const route = useRoute();
 
 const transcriptionItems = ref<TimecodeFile[]>([]);
@@ -65,10 +62,10 @@ onMounted(async () => {
 
 const downloadTranscription = async () => {
     if (editorStore.project_data === null) {
-        await editorStore.load_project_data(editorStore.project_id);
+        await editorStore.loadProjectData();
     }
     if (editorStore.project_data?.transcription_id === null) {
-        await editorStore.load_project_data(editorStore.project_id);
+        await editorStore.loadProjectData();
     }
     if (editorStore.project_data?.transcription_id === null) {
         return;

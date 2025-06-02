@@ -13,11 +13,11 @@
             </div>
         </Dialog>
         <div class="flex items-center justify-between h-1/12">
-            <Button :disabled="editorStore.mediaFile == null || editorStore.taskState == 'in_progress'" @click="openDialog">
+            <Button :disabled="editorStore.mediaFile == null || editorStore.summaryInProgress" @click="openDialog">
                 {{ editorStore.project_data?.summary_id == null ? 'Создать' : 'Пересоздать' }}
                 нейро-конспект
             </Button>
-            <ProgressSpinner v-if="editorStore.taskType == 'summary' && editorStore.taskState == 'in_progress'"
+            <ProgressSpinner v-if="editorStore.summaryInProgress"
                 style="height: 50px; margin: 0;" />
         </div>
         <div class="h-11/12">
@@ -36,18 +36,16 @@ import { Button } from 'primevue';
 import 'md-editor-v3/lib/style.css';
 import RU from '@vavt/cm-extension/dist/locale/ru'
 import { useEditorStore } from '@/stores/editor';
-import { useTask } from '@/composables/useTask';
 import axiosI from '@/utils/axiosInstance'
 
 const editorDisabled = computed(() => {
-    return editorStore.project_data?.summary_id == null || editorStore.taskState == 'in_progress' && editorStore.taskType == 'summary';
+    return editorStore.project_data?.summary_id == null || editorStore.summaryInProgress;
 });
 
 const user_prompt = ref('');
 const theming = useTheme();
 
 const editorStore = useEditorStore();
-const tasks = useTask()
 const dialogVisible = ref(false);
 
 function isValidUUID(str: string) {
@@ -55,7 +53,7 @@ function isValidUUID(str: string) {
 }
 
 function createSummaryTask() {
-    tasks.createTask({ project_id: editorStore.project_id, task_type: 'summary', prompt: user_prompt.value });
+    editorStore.createTask({ task_type: 'summary', prompt: user_prompt.value });
     dialogVisible.value = false;
 }
 function openDialog() {
@@ -78,7 +76,7 @@ async function saveSummary() {
             project_id: editorStore.project_id,
         },
     });
-    await editorStore.load_project_data(editorStore.project_id);
+    await editorStore.loadProjectData();
 }
 
 config({

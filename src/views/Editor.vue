@@ -69,17 +69,17 @@ import type { FileUploadUploaderEvent } from 'primevue';
 // #endregion
 // #region Libs Imports
 
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import type { AxiosProgressEvent } from 'axios';
 import axiosI from '@/utils/axiosInstance'
 // #endregion
 // #region Local Imports
-import { useTheme } from '@/composables/useTheme';
 import type { FileUploadResponse } from '@/models/fileSchema';
 import { useEditorStore } from '@/stores/editor';
 import type { FileUploadError } from '@/models/errorSchema';
 import { showAxiosErrorToast } from '@/utils/toastService';
+import { useWebSocket } from '@/composables/useWebSocket';
 
 // #endregion
 const player = ref()
@@ -91,26 +91,32 @@ function setTimecode(timecode: number) {
 const route = useRoute();
 const router = useRouter();
 const editor = useEditorStore();
-const theming = useTheme();
-
-
+const ws = useWebSocket(`${import.meta.env.VITE_API_BASE_URL}/project/ws/${route.params.id}`);
 
 const transcriptionFound = ref(false);
 
 onMounted(async () => {
     editor.project_id = route.params.id as string;
 
+    ws.connect();
+
     try {
-        await editor.load_project_data(editor.project_id);
+        await editor.fetchActiveTasks();
+        await editor.loadProjectData();
     } catch {
         router.push('/');
     }
     if (editor.project_data?.origin_file_id == null) return;
-    await editor.load_notes(editor.project_data?.origin_file_id)
+    await editor.loadNotes(editor.project_data?.origin_file_id)
 })
 
 onUnmounted(() => {
+    ws.disconnect();
     editor.reset();
+})
+
+watch(ws.rawMessage, (newMessage) => {
+    editor.newWSMessage = newMessage || "";
 })
 
 const uploadFileProgress = ref(0);
@@ -121,6 +127,7 @@ function isAudio() {
 }
 
 const video_sources = computed(() => {
+    if (editor.project_data?.origin_file_id == null) return [];
     return [
         {
             src: import.meta.env.VITE_API_BASE_URL + `/file/video/${editor.project_data?.origin_file_id}`,
@@ -142,12 +149,9 @@ async function customMediaUploader(event: FileUploadUploaderEvent) {
 
     formData.append("file", file);
     try {
-        const response = await axiosI.post<FileUploadResponse>("/file", formData, {
+        const response = await axiosI.post<FileUploadResponse>(`/file/${projectId}`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
-            },
-            params: {
-                project_id: projectId,
             },
             onUploadProgress: (progressEvent: AxiosProgressEvent) => {
                 if (progressEvent.lengthComputable && progressEvent.total) {
@@ -160,8 +164,8 @@ async function customMediaUploader(event: FileUploadUploaderEvent) {
             }
         });
         if (!editor.project_data) {
-            editor.load_project_data(editor.project_id);
-            return
+            editor.loadProjectData();
+            return;
         }
         editor.project_data.origin_file_id = response.data.id;
         editor.mediaFile = response.data;
