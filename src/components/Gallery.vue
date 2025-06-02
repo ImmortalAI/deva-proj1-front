@@ -75,7 +75,7 @@ import axiosI from '@/utils/axiosInstance';
 
 const editorStore = useEditorStore();
 
-const getImageUrl = (imgId: string) => `${import.meta.env.VITE_API_BASE_URL}/file/download/${imgId}`;
+const getImageUrl = (imgId: string) => `${import.meta.env.VITE_API_BASE_URL}/file/minio_url/${imgId}`;
 
 const numberToTimeStr = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
