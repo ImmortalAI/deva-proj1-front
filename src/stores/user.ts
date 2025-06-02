@@ -8,7 +8,9 @@ import { computed, ref } from "vue";
 import axiosI from "@/utils/axiosInstance";
 
 export const useUserStore = defineStore("user", () => {
+  const user_id = ref<string>("");
   const username = ref<string>("");
+
   const apiClientInternal = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL,
     withCredentials: true,
@@ -29,6 +31,7 @@ export const useUserStore = defineStore("user", () => {
    */
   async function logout() {
     await apiClientInternal.post("/auth/logout");
+    user_id.value = "";
     username.value = "";
   }
 
@@ -42,6 +45,7 @@ export const useUserStore = defineStore("user", () => {
       const response = await axiosI.get<AuthUserInfoResponse>(
         "/auth/user_info"
       );
+      user_id.value = response.data.id;
       username.value = response.data.login;
     } catch (e) {
       console.log(e);
@@ -50,5 +54,5 @@ export const useUserStore = defineStore("user", () => {
 
   const isAuthenticated = computed(() => username.value !== "");
 
-  return { username, isAuthenticated, fetchUserData, refreshToken, logout };
+  return { user_id, username, isAuthenticated, fetchUserData, refreshToken, logout };
 });

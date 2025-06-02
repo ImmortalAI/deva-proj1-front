@@ -74,6 +74,18 @@ export async function fetchProjectsList() {
     return response.data;
   } catch (e) {
     console.log(e); //FIXME
+    return [];
+  }
+}
+
+export async function fetchCollabProjectsList() {
+  const user = useUserStore();
+  try {
+    const response = await axiosI.get<ProjectListResponse>(`/project/share/projects/${user.user_id}`);  
+    return response.data;
+  } catch (e) {
+    console.log(e); //FIXME
+    return [];
   }
 }
 

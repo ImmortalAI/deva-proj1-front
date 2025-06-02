@@ -91,7 +91,7 @@ const addCollaborator = async () => {
 }
 
 const updateCollaborators = async () => {
-    await axiosI.get<ProjectShareGetResponse>(`/project/share/${editorStore.project_id}`).then((response) => {
+    await axiosI.get<ProjectShareGetResponse>(`/project/share/users/${editorStore.project_id}`).then((response) => {
         collaborators.value = response.data;
     }).catch((e) => {
         toast.add({ severity: 'error', summary: 'Error', detail: (e as ProjectShareGetError).detail, life: 3000 });
