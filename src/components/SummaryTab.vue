@@ -98,7 +98,7 @@ config({
             if (srcIndex >= 0) {
                 const src = token.attrs![srcIndex][1];
                 //if (isValidUUID(src))
-                    token.attrs![srcIndex][1] = `/file/download/${src}`;
+                    token.attrs![srcIndex][1] = `${import.meta.env.VITE_API_BASE_URL}/file/download/${src}`;
             }
             // Вызываем оригинал
             return defaultRender(tokens, idx, options, env, self);
