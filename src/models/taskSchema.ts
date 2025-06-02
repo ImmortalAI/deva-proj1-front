@@ -5,7 +5,6 @@ export type TaskTypes =
   | "summary_edit";
 export type TaskStatus = "not_started" | "in_progress" | "done";
 export interface TaskCreateRequest {
-  project_id: string;
   task_type: TaskTypes;
   prompt: string;
 }

@@ -2,7 +2,7 @@
     <div class="bg-neutral-800">
         <div v-if="editorStore.transcriptionFile == null" class="w-full h-full flex items-center justify-center">
             <Button v-if="editorStore.taskState === 'not_started'" :disabled="editorStore.mediaFile == null"
-                @click="tasks.createTask({ project_id: editorStore.project_id, task_type: 'transcribe', prompt: '' })"
+                @click="tasks.createTask({ task_type: 'transcribe', prompt: '' })"
                 class="w-fit h-fit p-0 rounded-full">Транскрибировать</Button>
             <div class="w-4/5" v-else>
                 <p>Обработка...</p>

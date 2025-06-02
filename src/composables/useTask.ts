@@ -35,8 +35,8 @@ export function useTask() {
     }
     try {
       const response = await axiosI.post<TaskCreateResponse>(
-        "/task",
-        taskCreateRequest
+        `/task/${editor.project_id}`,
+        taskCreateRequest,
       );
       editor.taskId = response.data.id;
       editor.taskType = taskCreateRequest.task_type;

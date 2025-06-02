@@ -80,6 +80,7 @@ import type { FileUploadResponse } from '@/models/fileSchema';
 import { useEditorStore } from '@/stores/editor';
 import type { FileUploadError } from '@/models/errorSchema';
 import { showAxiosErrorToast } from '@/utils/toastService';
+import { useWebSocket } from '@/composables/useWebSocket';
 
 // #endregion
 const player = ref()
@@ -92,6 +93,7 @@ const route = useRoute();
 const router = useRouter();
 const editor = useEditorStore();
 const theming = useTheme();
+const ws = useWebSocket(`${import.meta.env.VITE_API_BASE_URL}/project/ws/${route.params.id}`, (data: any) => {});
 
 
 
@@ -99,6 +101,8 @@ const transcriptionFound = ref(false);
 
 onMounted(async () => {
     editor.project_id = route.params.id as string;
+
+    ws.connect();
 
     try {
         await editor.load_project_data(editor.project_id);
