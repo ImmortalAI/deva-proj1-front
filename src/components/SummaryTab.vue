@@ -36,7 +36,6 @@ import { Button } from 'primevue';
 import 'md-editor-v3/lib/style.css';
 import RU from '@vavt/cm-extension/dist/locale/ru'
 import { useEditorStore } from '@/stores/editor';
-import { useTask } from '@/composables/useTask';
 import axiosI from '@/utils/axiosInstance'
 
 const editorDisabled = computed(() => {
@@ -47,7 +46,6 @@ const user_prompt = ref('');
 const theming = useTheme();
 
 const editorStore = useEditorStore();
-const tasks = useTask()
 const dialogVisible = ref(false);
 
 function isValidUUID(str: string) {
@@ -55,7 +53,7 @@ function isValidUUID(str: string) {
 }
 
 function createSummaryTask() {
-    tasks.createTask({ project_id: editorStore.project_id, task_type: 'summary', prompt: user_prompt.value });
+    editorStore.createTask({ task_type: 'summary', prompt: user_prompt.value });
     dialogVisible.value = false;
 }
 function openDialog() {

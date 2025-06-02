@@ -69,13 +69,12 @@ import type { FileUploadUploaderEvent } from 'primevue';
 // #endregion
 // #region Libs Imports
 
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import type { AxiosProgressEvent } from 'axios';
 import axiosI from '@/utils/axiosInstance'
 // #endregion
 // #region Local Imports
-import { useTheme } from '@/composables/useTheme';
 import type { FileUploadResponse } from '@/models/fileSchema';
 import { useEditorStore } from '@/stores/editor';
 import type { FileUploadError } from '@/models/errorSchema';
@@ -92,10 +91,7 @@ function setTimecode(timecode: number) {
 const route = useRoute();
 const router = useRouter();
 const editor = useEditorStore();
-const theming = useTheme();
-const ws = useWebSocket(`${import.meta.env.VITE_API_BASE_URL}/project/ws/${route.params.id}`, (data: any) => {});
-
-
+const ws = useWebSocket(`${import.meta.env.VITE_API_BASE_URL}/project/ws/${route.params.id}`);
 
 const transcriptionFound = ref(false);
 
@@ -114,7 +110,12 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+    ws.disconnect();
     editor.reset();
+})
+
+watch(ws.rawMessage, (newMessage) => {
+    editor.newWSMessage = newMessage || "";
 })
 
 const uploadFileProgress = ref(0);
@@ -137,12 +138,9 @@ async function customMediaUploader(event: FileUploadUploaderEvent) {
 
     formData.append("file", file);
     try {
-        const response = await axiosI.post<FileUploadResponse>("/file", formData, {
+        const response = await axiosI.post<FileUploadResponse>(`/file/${projectId}`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
-            },
-            params: {
-                project_id: projectId,
             },
             onUploadProgress: (progressEvent: AxiosProgressEvent) => {
                 if (progressEvent.lengthComputable && progressEvent.total) {

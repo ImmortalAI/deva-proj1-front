@@ -11,6 +11,7 @@ export interface TaskCreateRequest {
 
 export interface TaskCreateResponse {
   id: string;
+  task_type: TaskTypes;
   subtask_count: number;
 }
 
@@ -30,4 +31,16 @@ export interface TaskData {
   id: string;
   task_type: TaskTypes;
   data: TaskSSEResponse | null;
+}
+
+export interface WS_Data {
+  message_type: string;
+  data: any;
+}
+
+export interface WSTaskStatus {
+  id: string;
+  task_type: TaskTypes;
+  done: boolean;
+  status: number;
 }

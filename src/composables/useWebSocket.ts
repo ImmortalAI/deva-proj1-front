@@ -2,10 +2,11 @@ import { showToast } from "@/utils/toastService";
 import { ref, onUnmounted } from "vue";
 
 export function useWebSocket(
-  url: string,
-  onMessageCallback: (data: any) => void
+  url: string
 ) {
   const socket = ref<WebSocket | null>(null);
+  const rawMessage = ref<string | null>(null);
+  const parsedMessage = ref<any | null>(null);
   const isConnected = ref(false);
 
   const connect = () => {
@@ -24,8 +25,8 @@ export function useWebSocket(
             detail: event.data,
             life: 9999000
         })
-        const data = JSON.parse(event.data);
-        onMessageCallback(data);
+        rawMessage.value = event.data;
+        parsedMessage.value = JSON.parse(event.data);
       } catch (e) {
         console.error("Ошибка парсинга JSON:", e);
       }
@@ -42,12 +43,9 @@ export function useWebSocket(
   };
 
   const disconnect = () => {
+    console.log("WebSocket убит");
     socket.value?.close();
   };
 
-  onUnmounted(() => {
-    disconnect();
-  });
-
-  return { connect, disconnect, isConnected };
+  return { connect, disconnect, isConnected, rawMessage, parsedMessage };
 }
