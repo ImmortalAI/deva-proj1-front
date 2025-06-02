@@ -5,7 +5,7 @@ import Button from 'primevue/button'
 import { useUserStore } from '@/stores/user';
 import { useTheme } from '@/composables/useTheme';
 import { useToast } from 'primevue';
-import { setToastInstance } from './utils/toastService';
+import { setToastInstance } from '@/utils/toastService';
 
 const router = useRouter();
 const userStore = useUserStore();

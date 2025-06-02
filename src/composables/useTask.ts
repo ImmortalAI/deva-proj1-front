@@ -4,7 +4,7 @@ import type {
 } from "@/models/taskSchema";
 import { useEditorStore } from "@/stores/editor";
 import axiosI from "@/utils/axiosInstance";
-import { useSSE } from "./useSSE";
+import { useSSE } from "@/composables/useSSE";
 import { computed, ref, watch } from "vue";
 import type { ErrorResponse } from "@/models/errorSchema";
 import { showAxiosErrorToast, showToast } from "@/utils/toastService";

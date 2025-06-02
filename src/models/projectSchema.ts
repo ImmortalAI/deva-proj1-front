@@ -1,4 +1,4 @@
-import type { FileData } from "./fileSchema";
+import type { FileData } from "@/models/fileSchema";
 
 export interface ProjectSingleMessage {
   message: string;

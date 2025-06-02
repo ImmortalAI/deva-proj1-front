@@ -20,7 +20,7 @@ const router = createRouter({
     {
       path: "/login",
       name: "login",
-      component: () => import("../views/LoginView.vue"),
+      component: () => import("@/views/LoginView.vue"),
       meta: {
         requiresGuest: true,
       },
@@ -28,7 +28,7 @@ const router = createRouter({
     {
       path: "/register",
       name: "register",
-      component: () => import("../views/RegisterView.vue"),
+      component: () => import("@/views/RegisterView.vue"),
       meta: {
         requiresGuest: true,
       },
@@ -36,7 +36,7 @@ const router = createRouter({
     {
       path: "/edit/:id",
       name: "editor",
-      component: () => import("../views/Editor.vue"),
+      component: () => import("@/views/Editor.vue"),
       meta: {
         requiresAuth: true,
       },
