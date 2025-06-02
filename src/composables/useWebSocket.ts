@@ -19,12 +19,6 @@ export function useWebSocket(
 
     socket.value.onmessage = (event: MessageEvent) => {
       try {
-        showToast({
-            severity: "success",
-            summary: "Успешно",
-            detail: event.data,
-            life: 9999000
-        })
         rawMessage.value = event.data;
         parsedMessage.value = JSON.parse(event.data);
       } catch (e) {
