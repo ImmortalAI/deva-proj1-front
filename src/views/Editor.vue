@@ -69,7 +69,7 @@ import type { FileUploadUploaderEvent } from 'primevue';
 // #endregion
 // #region Libs Imports
 
-import { computed, onBeforeMount, onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import type { AxiosProgressEvent } from 'axios';
 import axiosI from '@/utils/axiosInstance'
@@ -78,6 +78,8 @@ import axiosI from '@/utils/axiosInstance'
 import { useTheme } from '@/composables/useTheme';
 import type { FileUploadResponse } from '@/models/fileSchema';
 import { useEditorStore } from '@/stores/editor';
+import type { FileUploadError } from '@/models/errorSchema';
+import { showAxiosErrorToast } from '@/utils/toastService';
 
 // #endregion
 const player = ref()
@@ -155,7 +157,7 @@ async function customMediaUploader(event: FileUploadUploaderEvent) {
         editor.project_data.origin_file_id = response.data.id;
         editor.mediaFile = response.data;
     } catch (e) {
-        console.log(e); //FIXME
+        showAxiosErrorToast<FileUploadError>(e);
     }
 }
 </script>

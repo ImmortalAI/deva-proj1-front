@@ -81,9 +81,7 @@ const createProj = async () => {
   const info = await createProject(request);
   if (info) {
     router.push(`/edit/${info.id}`);
-  } else {
-    console.log(request);
-  }
+  } 
 }
 
 onMounted(async () => {

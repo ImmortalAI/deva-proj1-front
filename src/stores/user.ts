@@ -2,7 +2,7 @@ import type {
   AuthRefreshResponse,
   AuthUserInfoResponse,
 } from "@/models/authSchema";
-import axios from "axios";
+import axios, { isAxiosError } from "axios";
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 import axiosI from "@/utils/axiosInstance";
@@ -48,11 +48,18 @@ export const useUserStore = defineStore("user", () => {
       user_id.value = response.data.id;
       username.value = response.data.login;
     } catch (e) {
-      console.log(e);
+      console.log("Nothing to fetch");
     }
   }
 
   const isAuthenticated = computed(() => username.value !== "");
 
-  return { user_id, username, isAuthenticated, fetchUserData, refreshToken, logout };
+  return {
+    user_id,
+    username,
+    isAuthenticated,
+    fetchUserData,
+    refreshToken,
+    logout,
+  };
 });

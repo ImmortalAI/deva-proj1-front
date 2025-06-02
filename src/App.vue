@@ -1,13 +1,18 @@
 <script setup lang="ts">
-import { RouterLink, RouterView, useRouter } from 'vue-router'
+import { RouterView, useRouter } from 'vue-router'
 import ToggleButton from 'primevue/togglebutton';
 import Button from 'primevue/button'
-import { useUserStore } from './stores/user';
-import { useTheme } from './composables/useTheme';
+import { useUserStore } from '@/stores/user';
+import { useTheme } from '@/composables/useTheme';
+import { useToast } from 'primevue';
+import { setToastInstance } from './utils/toastService';
 
 const router = useRouter();
 const userStore = useUserStore();
 const theming = useTheme();
+const toast = useToast();
+
+setToastInstance(toast);
 
 async function handleAuth() {
   if (userStore.isAuthenticated) {

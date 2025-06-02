@@ -56,13 +56,12 @@ import { onMounted, ref } from "vue";
 import { useEditorStore } from "@/stores/editor";
 import axiosI from "@/utils/axiosInstance";
 import type { ProjectShareGetResponse, ProjectCollaboratorData, ProjectPatchRequest, ProjectPatchResponse, ProjectSharePostRequest } from "@/models/projectSchema";
-import { useToast } from 'primevue/usetoast';
 import type { ProjectDeleteError, ProjectShareGetError, ProjectSharePostError } from "@/models/errorSchema";
 import { useConfirm } from "primevue/useconfirm";
 import { useRouter } from "vue-router";
+import { showAxiosErrorToast, showToast } from "@/utils/toastService";
 
 const editorStore = useEditorStore();
-const toast = useToast();
 const confirm = useConfirm();
 const router = useRouter();
 
@@ -86,7 +85,7 @@ const addCollaborator = async () => {
         login: newCollaboratorName.value,
     }
     await axiosI.post('/project/share', collabRequest).then(async () => { await updateCollaborators() }).catch((e) => {
-        toast.add({ severity: 'error', summary: 'Error', detail: (e as ProjectSharePostError).detail, life: 3000 });
+        showAxiosErrorToast<ProjectSharePostError>(e);
     });
 }
 
@@ -94,7 +93,7 @@ const updateCollaborators = async () => {
     await axiosI.get<ProjectShareGetResponse>(`/project/share/users/${editorStore.project_id}`).then((response) => {
         collaborators.value = response.data;
     }).catch((e) => {
-        toast.add({ severity: 'error', summary: 'Error', detail: (e as ProjectShareGetError).detail, life: 3000 });
+        showAxiosErrorToast<ProjectShareGetError>(e);
     })
 }
 
@@ -124,9 +123,9 @@ const deleteProject = async () => {
         accept: async () => {
             await axiosI.delete(`/project/${editorStore.project_id}`).then(() => {
                 router.push('/');
-                toast.add({ severity: 'success', summary: 'Success', detail: 'Проект успешно удален', life: 3000 });
+                showToast({ severity: 'success', summary: 'Успех', detail: 'Проект успешно удален', life: 3000 });
             }).catch((e) => {
-                toast.add({ severity: 'error', summary: 'Error', detail: (e as ProjectDeleteError).detail, life: 3000 });
+                showAxiosErrorToast<ProjectDeleteError>(e);
             })
         },
     })

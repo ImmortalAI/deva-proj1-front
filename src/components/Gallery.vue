@@ -11,7 +11,8 @@
             <div class="flex flex-wrap max-h-[75vh] overflow-y-scroll">
                 <div class="w-48 border-2 border-neutral-500 rounded-xl p-1 m-4 flex items-center"
                     v-for="image in videoImagesToShow" :key="image.id">
-                    <Image @show="loadMetaImage(image.id)" ref="el => imageElRefs[image.id] = el" :image-class="['aspect-video', 'object-cover']" :src="getImageUrl(image.id)"
+                    <Image @show="loadMetaImage(image.id)" ref="el => imageElRefs[image.id] = el"
+                        :image-class="['aspect-video', 'object-cover']" :src="getImageUrl(image.id)"
                         :alt="image.file_name" preview>
                         <template #original>
                             <div class="flex gap-4 p-8" @click.stop="loadMetaImage(image.id)">
@@ -43,6 +44,8 @@ import { useEditorStore } from '@/stores/editor';
 import { computed, ref } from 'vue';
 import type { FilePatchRequest } from '@/models/fileSchema';
 import axiosI from '@/utils/axiosInstance'
+import type { ErrorResponse } from '@/models/errorSchema';
+import { showAxiosErrorToast } from '@/utils/toastService';
 const editor = useEditorStore();
 const tasks = useTask();
 
@@ -70,18 +73,19 @@ const textareaContent = ref<string>("");
 const imageElRefs = ref<any>({});
 
 const loadMetaImage = async (imgId: string) => {
-        const index = editor.videoFrames.findIndex((frame) => frame.id === imgId);
-        if (index !== -1) {
-            timecodeText.value = numberToTimeStr(editor.videoFrames[index].metadata_timecode);
-            textareaContent.value = editor.videoFrames[index].metadata_text;
-        }
+    const index = editor.videoFrames.findIndex((frame) => frame.id === imgId);
+    if (index !== -1) {
+        timecodeText.value = numberToTimeStr(editor.videoFrames[index].metadata_timecode);
+        textareaContent.value = editor.videoFrames[index].metadata_text;
+    }
 }
 
 const addCommentImage = async (imgId: string) => {
     const index = editor.videoFrames.findIndex((frame) => frame.id === imgId);
     if (index !== -1 && textareaContent.value) {
         editor.videoFrames[index].metadata_text = textareaContent.value;
-        await axiosI.patch(`/file/${imgId}`, { metadata_text: textareaContent.value } as FilePatchRequest).catch(e => console.log(e));
+        await axiosI.patch(`/file/${imgId}`, { metadata_text: textareaContent.value } as FilePatchRequest)
+            .catch(e => showAxiosErrorToast<ErrorResponse>(e));
         textareaContent.value = "";
         timecodeText.value = "";
         const imgComp = imageElRefs.value[imgId];
@@ -93,7 +97,8 @@ const hideImage = async (imgId: string) => {
     const index = editor.videoFrames.findIndex((frame) => frame.id === imgId);
     if (index !== -1) {
         editor.videoFrames[index].metadata_is_hide = true;
-        await axiosI.patch(`/file/${imgId}`, { metadata_is_hide: true } as FilePatchRequest).catch(e => console.log(e));
+        await axiosI.patch(`/file/${imgId}`, { metadata_is_hide: true } as FilePatchRequest)
+            .catch(e => showAxiosErrorToast<ErrorResponse>(e));
         const imgComp = imageElRefs.value[imgId];
         if (imgComp?.hide) imgComp.hide();
     }

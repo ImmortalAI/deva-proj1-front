@@ -3,9 +3,11 @@ import type {
   TaskCreateResponse,
 } from "@/models/taskSchema";
 import { useEditorStore } from "@/stores/editor";
-import axiosI from '@/utils/axiosInstance'
+import axiosI from "@/utils/axiosInstance";
 import { useSSE } from "./useSSE";
 import { computed, ref, watch } from "vue";
+import type { ErrorResponse } from "@/models/errorSchema";
+import { showAxiosErrorToast, showToast } from "@/utils/toastService";
 
 export function useTask() {
   const editor = useEditorStore();
@@ -17,7 +19,12 @@ export function useTask() {
     taskCreateRequest: TaskCreateRequest
   ): Promise<boolean> => {
     if (editor.taskState === "in_progress") {
-      console.error("Task already in progress");
+      showToast({
+        severity: "error",
+        summary: "Error",
+        detail: "Задача уже в работе!",
+        life: 3000,
+      });
       return false;
     }
     if (editor.taskState === "done") {
@@ -38,7 +45,7 @@ export function useTask() {
       sse.connect(`/task/sse/${editor.taskId}`);
       return true;
     } catch (e) {
-      console.log(e); //FIXME
+      showAxiosErrorToast<ErrorResponse>(e);
       return false;
     }
   };

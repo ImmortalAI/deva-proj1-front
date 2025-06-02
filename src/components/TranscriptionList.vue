@@ -39,9 +39,10 @@ import { useSSE } from '@/composables/useSSE';
 import timeConverter from '@/utils/timeConverter';
 import { useTask } from '@/composables/useTask';
 import { useRoute } from 'vue-router';
+import type { ErrorResponse } from '@/models/errorSchema';
+import { showAxiosErrorToast } from '@/utils/toastService';
 
 const editorStore = useEditorStore();
-const sse = useSSE();
 const tasks = useTask();
 const route = useRoute();
 
@@ -77,7 +78,7 @@ const downloadTranscription = async () => {
             transcriptionItems.value.push(item);
         });
     }).catch((e) => {
-        console.log(e); //FIXME
+        showAxiosErrorToast<ErrorResponse>(e);
     });
 }
 </script>
