@@ -113,7 +113,7 @@ import { showAxiosErrorToast } from '@/utils/toastService';
 const editorStore = useEditorStore();
 const tasks = useTask();
 
-const getImageUrl = (imgId: string) => `/file/download/${imgId}`
+const getImageUrl = (imgId: string) => `${import.meta.env.VITE_BASE_API_URL}/file/download/${imgId}`
 
 const numberToTimeStr = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
