@@ -81,6 +81,7 @@ export const useEditorStore = defineStore("editor", () => {
       if (response.data.subtask_count > 0) {
         bigTaskId.value = response.data.id;
         subtaskCount.value = response.data.subtask_count;
+        await fetchActiveTasks();
       } else {
         switch (taskCreateRequest.task_type) {
           case "transcribe":
@@ -133,6 +134,7 @@ export const useEditorStore = defineStore("editor", () => {
     if (parsedValue.message_type === "connection") return;
     // Process message about task status and its completion
     if (parsedValue.message_type === "task_status") {
+      console.log("UPDATING TASK STATUS");
       const taskDataWS = parsedValue.data as WSTaskStatus;
       // SMALL TASKS
       if (transcribeTaskData.value?.id === taskDataWS.id)
@@ -144,6 +146,7 @@ export const useEditorStore = defineStore("editor", () => {
       if (summaryEditTaskData.value?.id === taskDataWS.id)
         summaryEditTaskData.value = taskDataWS;
     } else if (parsedValue.message_type === "task_done") {
+      console.log("TASK DONE!!!!!!!!!");
       const taskDataWS = parsedValue.data as WSTaskStatus;
       // BIG TASK
       if (taskDataWS.id === bigTaskId.value && taskDataWS.done) return;
