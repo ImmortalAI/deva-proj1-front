@@ -13,7 +13,7 @@
             </div>
         </Dialog>
         <div class="flex items-center justify-between h-1/12">
-            <Button :disabled="editorStore.taskState == 'in_progress'" @click="openDialog">
+            <Button :disabled="editorStore.mediaFile == null || editorStore.taskState == 'in_progress'" @click="openDialog">
                 {{ editorStore.project_data?.summary_id == null ? 'Создать' : 'Пересоздать' }}
                 нейро-конспект
             </Button>

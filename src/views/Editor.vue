@@ -118,7 +118,7 @@ const uploadFileProgress = ref(0);
 const video_sources = computed(() => {
     return [
         {
-            src: `/file/video/${editor.project_data?.origin_file_id}`,
+            src: import.meta.env.VITE_API_BASE_URL + `/file/video/${editor.project_data?.origin_file_id}`,
             type: 'video/mp4'
         }
     ]
