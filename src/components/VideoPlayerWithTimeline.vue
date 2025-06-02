@@ -121,7 +121,7 @@ async function deleteCurrentNote() {
   if (!editorStore.mediaFile) return;
   await deleteNote(updateNoteId.value);
   dialogUpdateVisible.value = false;
-  await editorStore.load_notes(editorStore.mediaFile.id);
+  await editorStore.loadNotes(editorStore.mediaFile.id);
 }
 
 async function saveNote() {
@@ -133,14 +133,14 @@ async function saveNote() {
     end_time_code: createdNoteTime.value
   });
   dialogSaveVisible.value = false;
-  await editorStore.load_notes(editorStore.mediaFile.id);
+  await editorStore.loadNotes(editorStore.mediaFile.id);
 }
 
 async function updateCurrentNote() {
   if (!editorStore.mediaFile) return;
   await updateNote(updateNoteId.value, { text: createdNoteText.value });
   dialogUpdateVisible.value = false;
-  await editorStore.load_notes(editorStore.mediaFile.id);
+  await editorStore.loadNotes(editorStore.mediaFile.id);
 }
 
 function cancelNoteCreate() {

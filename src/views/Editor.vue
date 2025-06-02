@@ -101,12 +101,13 @@ onMounted(async () => {
     ws.connect();
 
     try {
-        await editor.load_project_data(editor.project_id);
+        await editor.fetchActiveTasks();
+        await editor.loadProjectData();
     } catch {
         router.push('/');
     }
     if (editor.project_data?.origin_file_id == null) return;
-    await editor.load_notes(editor.project_data?.origin_file_id)
+    await editor.loadNotes(editor.project_data?.origin_file_id)
 })
 
 onUnmounted(() => {
@@ -121,6 +122,7 @@ watch(ws.rawMessage, (newMessage) => {
 const uploadFileProgress = ref(0);
 
 const video_sources = computed(() => {
+    if (editor.project_data?.origin_file_id == null) return [];
     return [
         {
             src: import.meta.env.VITE_API_BASE_URL + `/file/video/${editor.project_data?.origin_file_id}`,
@@ -153,8 +155,8 @@ async function customMediaUploader(event: FileUploadUploaderEvent) {
             }
         });
         if (!editor.project_data) {
-            editor.load_project_data(editor.project_id);
-            return
+            editor.loadProjectData();
+            return;
         }
         editor.project_data.origin_file_id = response.data.id;
         editor.mediaFile = response.data;

@@ -11,6 +11,7 @@ import type {
   TaskCreateResponse,
   WS_Data,
   WSTaskStatus,
+  ActiveTasksResponse,
 } from "@/models/taskSchema";
 import {
   fetchProjectData,
@@ -33,17 +34,37 @@ export const useEditorStore = defineStore("editor", () => {
   const summaryFile = ref<FileData | null>(null);
   const videoFrames = reactive<FileData[]>([]);
 
-  const taskId = ref("");
-  const taskState = ref<TaskStatus>("not_started");
-  const taskType = ref<TaskTypes | null>(null);
-  const taskData = ref<WSTaskStatus[]>([]);
-
+  const bigTaskId = ref("");
   const subtaskCount = ref(0);
+
+  const transcribeTaskData = ref<WSTaskStatus | null>(null);
+  const summaryTaskData = ref<WSTaskStatus | null>(null);
+  const framesExtractTaskData = ref<WSTaskStatus | null>(null);
+  const summaryEditTaskData = ref<WSTaskStatus | null>(null);
+
+  const transcribeInProgress = computed(() => {
+    return (
+      transcribeTaskData.value != null && transcribeTaskData.value.status !== 1
+    );
+  });
+  const summaryInProgress = computed(() => {
+    return (
+      (summaryTaskData.value != null && summaryTaskData.value.status !== 1) ||
+      (summaryEditTaskData.value != null &&
+        summaryEditTaskData.value.status !== 1)
+    );
+  });
+  const framesExtractInProgress = computed(() => {
+    return (
+      framesExtractTaskData.value != null &&
+      framesExtractTaskData.value.status !== 1
+    );
+  });
 
   const createTask = async (
     taskCreateRequest: TaskCreateRequest
   ): Promise<boolean> => {
-    if (taskState.value === "in_progress") {
+    if (bigTaskId.value !== "") {
       showToast({
         severity: "error",
         summary: "Error",
@@ -52,21 +73,50 @@ export const useEditorStore = defineStore("editor", () => {
       });
       return false;
     }
-    if (taskState.value === "done") {
-      taskId.value = "";
-      taskState.value = "not_started";
-      taskData.value.length = 0;
-      taskType.value = null;
-    }
     try {
       const response = await axiosI.post<TaskCreateResponse>(
         `/task/${project_id.value}`,
         taskCreateRequest
       );
-      taskId.value = response.data.id;
-      taskType.value = response.data.task_type;
-      taskState.value = "in_progress";
-      subtaskCount.value = response.data.subtask_count;
+      if (response.data.subtask_count > 0) {
+        bigTaskId.value = response.data.id;
+        subtaskCount.value = response.data.subtask_count;
+      } else {
+        switch (taskCreateRequest.task_type) {
+          case "transcribe":
+            transcribeTaskData.value = {
+              id: response.data.id,
+              task_type: response.data.task_type,
+              done: false,
+              status: 0,
+            };
+            break;
+          case "frames_extract":
+            framesExtractTaskData.value = {
+              id: response.data.id,
+              task_type: response.data.task_type,
+              done: false,
+              status: 0,
+            };
+            break;
+          case "summary":
+            summaryTaskData.value = {
+              id: response.data.id,
+              task_type: response.data.task_type,
+              done: false,
+              status: 0,
+            };
+            break;
+          case "summary_edit":
+            summaryEditTaskData.value = {
+              id: response.data.id,
+              task_type: response.data.task_type,
+              done: false,
+              status: 0,
+            };
+            break;
+        }
+      }
 
       return true;
     } catch (e) {
@@ -76,47 +126,43 @@ export const useEditorStore = defineStore("editor", () => {
   };
 
   const newWSMessage = ref<string>("");
-  watch(newWSMessage, (newValue) => {
+  watch(newWSMessage, async (newValue) => {
     if (newValue === "") return;
     const parsedValue: WS_Data = JSON.parse(newValue);
     // Skip message about connection status
     if (parsedValue.message_type === "connection") return;
     // Process message about task status and its completion
-    if (parsedValue.message_type === "task_status" || parsedValue.message_type === "task_done") {
+    if (parsedValue.message_type === "task_status") {
       const taskDataWS = parsedValue.data as WSTaskStatus;
-      const subtaskIndex = taskData.value.findIndex(
-        (task) => task.id === taskDataWS.id
-      );
-      if (subtaskIndex !== -1) {
-        taskData.value[subtaskIndex] = taskDataWS;
-      } else {
-        taskData.value.push(taskDataWS);
-      }
+      // SMALL TASKS
+      if (transcribeTaskData.value?.id === taskDataWS.id)
+        transcribeTaskData.value = taskDataWS;
+      if (summaryTaskData.value?.id === taskDataWS.id)
+        summaryTaskData.value = taskDataWS;
+      if (framesExtractTaskData.value?.id === taskDataWS.id)
+        framesExtractTaskData.value = taskDataWS;
+      if (summaryEditTaskData.value?.id === taskDataWS.id)
+        summaryEditTaskData.value = taskDataWS;
+    } else if (parsedValue.message_type === "task_done") {
+      const taskDataWS = parsedValue.data as WSTaskStatus;
+      // BIG TASK
+      if (taskDataWS.id === bigTaskId.value && taskDataWS.done) return;
+      // SMALL TASKS
+      if (transcribeTaskData.value?.id === taskDataWS.id)
+        transcribeTaskData.value = taskDataWS;
+      if (summaryTaskData.value?.id === taskDataWS.id)
+        summaryTaskData.value = taskDataWS;
+      if (framesExtractTaskData.value?.id === taskDataWS.id)
+        framesExtractTaskData.value = taskDataWS;
+      if (summaryEditTaskData.value?.id === taskDataWS.id)
+        summaryEditTaskData.value = taskDataWS;
+      await loadProjectData();
     }
-  });
-
-  const totalTaskProgress = computed(() => {
-    return (
-      (taskData.value.reduce((sum, task) => sum + (task.status ?? 1), 0) /
-        (subtaskCount.value + 1)) *
-      100
-    );
   });
 
   const transcribeTaskProgress = computed(() => {
-    const task = taskData.value.find((task) => task.task_type === "transcribe");
-    return (task?.status ?? 0) * 100;
+    return (transcribeTaskData.value?.status ?? 0) * 100;
   });
-
-  watch(taskData, async (newValue) => {
-    const mainTask = newValue.find((task) => task.id === taskId.value);
-    console.log("TASKA BLYA")
-    if (mainTask !== undefined && mainTask.done) {
-      console.log("TASKA DONE")
-      taskState.value = "done";
-      await load_project_data(project_id.value);
-    }
-  }, {deep: true});
 
   const tasks = {
     transcribe: ref<TaskData | null>(null),
@@ -129,10 +175,59 @@ export const useEditorStore = defineStore("editor", () => {
 
   const summaryFileContent = ref<string>("");
 
-  async function load_project_data(project_id: string) {
-    const data = await fetchProjectData(project_id);
+  async function fetchActiveTasks() {
+    try {
+      const tasksResponse = await axiosI.get<ActiveTasksResponse>(
+        `/project/get_active_tasks/${project_id.value}`
+      );
+      tasksResponse.data.forEach((task) => {
+        if (task.subtask_count > 0) bigTaskId.value = task.id;
+        else {
+          switch (task.task_type) {
+            case "transcribe":
+              transcribeTaskData.value = {
+                id: task.id,
+                task_type: task.task_type,
+                done: false,
+                status: 0,
+              };
+              break;
+            case "summary":
+              summaryTaskData.value = {
+                id: task.id,
+                task_type: task.task_type,
+                done: false,
+                status: 0,
+              };
+              break;
+            case "frames_extract":
+              framesExtractTaskData.value = {
+                id: task.id,
+                task_type: task.task_type,
+                done: false,
+                status: 0,
+              };
+              break;
+            case "summary_edit":
+              summaryEditTaskData.value = {
+                id: task.id,
+                task_type: task.task_type,
+                done: false,
+                status: 0,
+              };
+              break;
+          }
+        }
+      });
+    } catch (e) {
+      showAxiosErrorToast<ErrorResponse>(e);
+    }
+  }
+
+  async function loadProjectData() {
+    const data = await fetchProjectData(project_id.value);
     if (data == undefined) return;
-    const files_data = await fetchProjectFiles(project_id);
+    const files_data = await fetchProjectFiles(project_id.value);
     if (files_data != undefined) {
       if (data.transcription_id != null && transcriptionFile.value == null) {
         const transcription_data = files_data.find(
@@ -176,22 +271,30 @@ export const useEditorStore = defineStore("editor", () => {
     if (!fetched_tasks) return;
   }
 
-  async function load_notes(file_id: string) {
+  async function loadNotes(file_id: string) {
     const new_notes = await getNotes(file_id);
     if (new_notes) notes.value = new_notes;
   }
 
   function reset() {
+    project_id.value = "";
     project_data.value = { ...EmptyProjectData };
+
     mediaFile.value = null;
     transcriptionFile.value = null;
+    summaryFile.value = null;
+    videoFrames.length = 0;
 
+    bigTaskId.value = "";
+    subtaskCount.value = 0;
+    transcribeTaskData.value = null;
+    summaryTaskData.value = null;
+    framesExtractTaskData.value = null;
+    summaryEditTaskData.value = null;
+
+    notes.value = [];
     summaryFileContent.value = "";
-
-    taskId.value = "";
-    taskState.value = "not_started";
-    taskType.value = null;
-    taskData.value.length = 0;
+    newWSMessage.value = "";
   }
 
   return {
@@ -201,11 +304,14 @@ export const useEditorStore = defineStore("editor", () => {
     transcriptionFile,
     summaryFile,
     videoFrames,
-    taskId,
-    taskState,
-    taskType,
-    taskData,
-    totalTaskProgress,
+    bigTaskId,
+    transcribeTaskData,
+    summaryTaskData,
+    framesExtractTaskData,
+    summaryEditTaskData,
+    transcribeInProgress,
+    summaryInProgress,
+    framesExtractInProgress,
     transcribeTaskProgress,
     newWSMessage,
     notes,
@@ -213,7 +319,8 @@ export const useEditorStore = defineStore("editor", () => {
     tasks,
     createTask,
     reset,
-    load_project_data,
-    load_notes,
+    loadProjectData,
+    fetchActiveTasks,
+    loadNotes,
   };
 });

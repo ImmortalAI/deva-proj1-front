@@ -1,7 +1,7 @@
 <template>
     <div class="bg-neutral-800">
         <div v-if="editorStore.transcriptionFile == null" class="w-full h-full flex items-center justify-center">
-            <Button v-if="editorStore.taskState === 'not_started'" :disabled="editorStore.mediaFile == null"
+            <Button v-if="!editorStore.transcribeInProgress" :disabled="editorStore.mediaFile == null"
                 @click="editorStore.createTask({ task_type: 'transcribe', prompt: '' })"
                 class="w-fit h-fit p-0 rounded-full">Транскрибировать</Button>
             <div class="w-4/5" v-else>
@@ -62,10 +62,10 @@ onMounted(async () => {
 
 const downloadTranscription = async () => {
     if (editorStore.project_data === null) {
-        await editorStore.load_project_data(editorStore.project_id);
+        await editorStore.loadProjectData();
     }
     if (editorStore.project_data?.transcription_id === null) {
-        await editorStore.load_project_data(editorStore.project_id);
+        await editorStore.loadProjectData();
     }
     if (editorStore.project_data?.transcription_id === null) {
         return;

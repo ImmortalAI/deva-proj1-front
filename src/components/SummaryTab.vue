@@ -13,11 +13,11 @@
             </div>
         </Dialog>
         <div class="flex items-center justify-between h-1/12">
-            <Button :disabled="editorStore.mediaFile == null || editorStore.taskState == 'in_progress'" @click="openDialog">
+            <Button :disabled="editorStore.mediaFile == null || editorStore.summaryInProgress" @click="openDialog">
                 {{ editorStore.project_data?.summary_id == null ? 'Создать' : 'Пересоздать' }}
                 нейро-конспект
             </Button>
-            <ProgressSpinner v-if="editorStore.taskType == 'summary' && editorStore.taskState == 'in_progress'"
+            <ProgressSpinner v-if="editorStore.summaryInProgress"
                 style="height: 50px; margin: 0;" />
         </div>
         <div class="h-11/12">
@@ -39,7 +39,7 @@ import { useEditorStore } from '@/stores/editor';
 import axiosI from '@/utils/axiosInstance'
 
 const editorDisabled = computed(() => {
-    return editorStore.project_data?.summary_id == null || editorStore.taskState == 'in_progress' && editorStore.taskType == 'summary';
+    return editorStore.project_data?.summary_id == null || editorStore.summaryInProgress;
 });
 
 const user_prompt = ref('');
@@ -76,7 +76,7 @@ async function saveSummary() {
             project_id: editorStore.project_id,
         },
     });
-    await editorStore.load_project_data(editorStore.project_id);
+    await editorStore.loadProjectData();
 }
 
 config({

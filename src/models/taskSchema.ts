@@ -15,6 +15,8 @@ export interface TaskCreateResponse {
   subtask_count: number;
 }
 
+export type ActiveTasksResponse = TaskCreateResponse[];
+
 export interface TaskSSEResponse {
   id: string;
   task_type: TaskTypes;

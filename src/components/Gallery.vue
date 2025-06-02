@@ -1,10 +1,10 @@
 <template>
     <div class="w-full">
         <div class="flex gap-4">
-            <Button v-if="editorStore.videoFrames.length == 0" :disabled="editorStore.mediaFile == null || editorStore.taskState === 'in_progress'"
+            <Button v-if="editorStore.videoFrames.length == 0" :disabled="editorStore.mediaFile == null || editorStore.framesExtractInProgress"
                 label="Выполнить нарезку из видео" severity="secondary"
                 @click="editorStore.createTask({ task_type: 'frames_extract', prompt: '' })" />
-            <ProgressSpinner v-if="editorStore.taskState === 'in_progress'" class="!w-12 !h-12 !m-0"></ProgressSpinner>
+            <ProgressSpinner v-if="editorStore.framesExtractInProgress" class="!w-12 !h-12 !m-0"></ProgressSpinner>
             <Button label="Загрузить изображение" severity="secondary" />
         </div>
         <div class="flex items-center w-full">
