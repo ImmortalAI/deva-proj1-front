@@ -1,11 +1,11 @@
 <template>
     <div class="w-full">
         <div class="flex gap-4">
-            <Button v-if="editor.videoFrames.length == 0" :disabled="editor.taskState === 'in_progress'"
-                    label="Выполнить нарезку из видео" severity="secondary"
-                    @click="tasks.createTask({ project_id: editor.project_id, task_type: 'frames_extract', prompt: '' })"/>
-            <ProgressSpinner v-if="editor.taskState === 'in_progress'" class="!w-12 !h-12 !m-0"></ProgressSpinner>
-            <Button label="Загрузить изображение" severity="secondary"/>
+            <Button v-if="editorStore.videoFrames.length == 0" :disabled="editorStore.mediaFile == null || editorStore.taskState === 'in_progress'"
+                label="Выполнить нарезку из видео" severity="secondary"
+                @click="tasks.createTask({ project_id: editorStore.project_id, task_type: 'frames_extract', prompt: '' })" />
+            <ProgressSpinner v-if="editorStore.taskState === 'in_progress'" class="!w-12 !h-12 !m-0"></ProgressSpinner>
+            <Button label="Загрузить изображение" severity="secondary" />
         </div>
         <div class="flex items-center w-full">
             <div class="flex flex-wrap max-h-[75vh] overflow-y-scroll">
@@ -108,7 +108,9 @@ import {computed, ref} from 'vue';
 import type {FileData, FilePatchRequest} from '@/models/fileSchema';
 import axiosI from '@/utils/axiosInstance'
 
-const editor = useEditorStore();
+import type { ErrorResponse } from '@/models/errorSchema';
+import { showAxiosErrorToast } from '@/utils/toastService';
+const editorStore = useEditorStore();
 const tasks = useTask();
 
 const getImageUrl = (imgId: string) => `/file/download/${imgId}`
@@ -126,7 +128,7 @@ const numberToTimeStr = (seconds: number): string => {
 };
 
 const videoImagesToShow = computed(() => {
-    return editor.videoFrames.filter((frame) => !frame.metadata_is_hide).sort((a, b) => a.metadata_timecode - b.metadata_timecode);
+    return editorStore.videoFrames.filter((frame) => !frame.metadata_is_hide).sort((a, b) => a.metadata_timecode - b.metadata_timecode);
 })
 
 const timecodeText = ref<string>("");
@@ -135,17 +137,18 @@ const textareaContent = ref<string>("");
 const imageElRefs = ref<any>({});
 
 const loadMetaImage = async (imgId: string) => {
-    const index = editor.videoFrames.findIndex((frame) => frame.id === imgId);
+    const index = editorStore.videoFrames.findIndex((frame) => frame.id === imgId);
     if (index !== -1) {
-        timecodeText.value = formatTimecode(editor.videoFrames[index]);
-        textareaContent.value = editor.videoFrames[index].metadata_text;
+        timecodeText.value = formatTimecode(editorStore.videoFrames[index]);
+        textareaContent.value = editorStore.videoFrames[index].metadata_text;
+
     }
 }
 
 const addCommentImage = async (imgId: string) => {
-    const index = editor.videoFrames.findIndex((frame) => frame.id === imgId);
+    const index = editorStore.videoFrames.findIndex((frame) => frame.id === imgId);
     if (index !== -1 && textareaContent.value) {
-        editor.videoFrames[index].metadata_text = textareaContent.value;
+        editorStore.videoFrames[index].metadata_text = textareaContent.value;
         await axiosI.patch(`/file/${imgId}`, {metadata_text: textareaContent.value} as FilePatchRequest).catch(e => console.log(e));
         textareaContent.value = "";
         timecodeText.value = "";
@@ -155,10 +158,11 @@ const addCommentImage = async (imgId: string) => {
 }
 
 const hideImage = async (imgId: string) => {
-    const index = editor.videoFrames.findIndex((frame) => frame.id === imgId);
+    const index = editorStore.videoFrames.findIndex((frame) => frame.id === imgId);
     if (index !== -1) {
-        editor.videoFrames[index].metadata_is_hide = true;
+        editorStore.videoFrames[index].metadata_is_hide = true;
         await axiosI.patch(`/file/${imgId}`, {metadata_is_hide: true} as FilePatchRequest).catch(e => console.log(e));
+
         const imgComp = imageElRefs.value[imgId];
         if (imgComp?.hide) imgComp.hide();
     }

@@ -18,6 +18,7 @@
   </Dialog>
   <main class="ml-[10%] mr-[10%] mt-8">
     <div v-if="userStore.isAuthenticated">
+      <h1 class="mb-8 text-2xl text-shadow-surface-600 text-center">Мои проекты</h1>
       <div class="w-full p-2 border-2 border-violet-900 rounded-2xl mb-8 border-dashed">
         <a href="#" @click.prevent="newProjectInit" class="block w-full">
           <span class="text-center block w-full">Создать новый проект</span>
@@ -26,6 +27,12 @@
       <div class="flex flex-col gap-4">
         <FileElement v-for="availableFile in availableProjects" :idFile="availableFile.id"
           :nameFile="availableFile.name" :descriptionFile="availableFile.description" />
+      </div>
+      <Divider/>
+      <h1 class="mb-8 text-2xl text-shadow-surface-600 text-center">Проекты в коллаборации</h1>
+      <div class="flex flex-col gap-4">
+        <FileElement v-for="availableCollabFile in availableCollabProjects" :idFile="availableCollabFile.id"
+          :nameFile="availableCollabFile.name" :descriptionFile="availableCollabFile.description" />
       </div>
     </div>
     <div v-else>
@@ -37,7 +44,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { useUserStore } from '@/stores/user';
-import { fetchProjectsList } from '@/utils/projectCRUD';
+import { fetchCollabProjectsList, fetchProjectsList } from '@/utils/projectCRUD';
 import { useRouter } from 'vue-router';
 import { createProject } from '@/utils/projectCRUD';
 import type { ProjectCreateRequest, ProjectData } from '@/models/projectSchema';
@@ -48,6 +55,7 @@ const editorStore = useEditorStore();
 const router = useRouter();
 
 const availableProjects = ref<ProjectData[]>([]);
+const availableCollabProjects = ref<ProjectData[]>([]);
 const dialogVisible = ref(false);
 
 const project_name = ref<string>('Новый проект');
@@ -73,9 +81,7 @@ const createProj = async () => {
   const info = await createProject(request);
   if (info) {
     router.push(`/edit/${info.id}`);
-  } else {
-    console.log(request);
-  }
+  } 
 }
 
 onMounted(async () => {
@@ -83,9 +89,16 @@ onMounted(async () => {
     if (availableProjects.value.length > 1) {
       availableProjects.value = [];
     }
-    (await fetchProjectsList())?.forEach((project) => {
+    (await fetchProjectsList()).forEach((project) => {
       availableProjects.value.push(project);
-    })
+    });
+
+    if (availableCollabProjects.value.length > 1) {
+      availableCollabProjects.value = [];
+    }
+    (await fetchCollabProjectsList()).forEach((project) => {
+      availableCollabProjects.value.push(project);
+    });
   }
 })
 </script>

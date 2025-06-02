@@ -32,6 +32,10 @@ export type ProjectGetError = ErrorResponse;
 export type ProjectGetAllFilesError = ErrorResponse;
 
 export type ProjectListError = ErrorResponse;
+
+export type ProjectSharePostError = ErrorResponse;
+
+export type ProjectShareGetError = ErrorResponse;
 // #endregion
 
 // #region File Errors

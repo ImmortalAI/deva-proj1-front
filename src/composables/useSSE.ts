@@ -1,5 +1,7 @@
 import type { TaskSSEResponse } from "@/models/taskSchema";
 import { ref, onBeforeUnmount } from "vue";
+import type { ErrorResponse } from "@/models/errorSchema";
+import { showAxiosErrorToast } from "@/utils/toastService";
 
 export function useSSE() {
   const data = ref<TaskSSEResponse | null>(null);
@@ -17,7 +19,7 @@ export function useSSE() {
       try {
         data.value = JSON.parse(e.data) as TaskSSEResponse;
       } catch (e) {
-        console.error(e);
+        showAxiosErrorToast<ErrorResponse>(e);
       }
     };
     es.onerror = (e) => {
