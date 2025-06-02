@@ -4,9 +4,12 @@ FROM node:23-slim AS builder
 # Set working directory
 WORKDIR /app
 
+# Set environment variables
+ENV VITE_API_BASE_URL=/api
+
 # Install dependencies
 COPY package*.json ./
-RUN npm install --force
+RUN npm install
 
 # Copy the rest of the app
 COPY . .
