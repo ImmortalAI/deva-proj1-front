@@ -1,10 +1,10 @@
 <template>
     <div class="w-full">
         <div class="flex gap-4">
-            <Button v-if="editorStore.videoFrames.length == 0" :disabled="editorStore.mediaFile == null || editorStore.taskState === 'in_progress'"
+            <Button v-if="editorStore.videoFrames.length == 0" :disabled="editorStore.mediaFile == null || editorStore.framesExtractInProgress"
                 label="Выполнить нарезку из видео" severity="secondary"
-                @click="tasks.createTask({ project_id: editorStore.project_id, task_type: 'frames_extract', prompt: '' })" />
-            <ProgressSpinner v-if="editorStore.taskState === 'in_progress'" class="!w-12 !h-12 !m-0"></ProgressSpinner>
+                @click="editorStore.createTask({ task_type: 'frames_extract', prompt: '' })" />
+            <ProgressSpinner v-if="editorStore.framesExtractInProgress" class="!w-12 !h-12 !m-0"></ProgressSpinner>
             <Button label="Загрузить изображение" severity="secondary" />
         </div>
         <div class="flex items-center w-full">
@@ -111,7 +111,6 @@ import axiosI from '@/utils/axiosInstance'
 import type { ErrorResponse } from '@/models/errorSchema';
 import { showAxiosErrorToast } from '@/utils/toastService';
 const editorStore = useEditorStore();
-const tasks = useTask();
 
 const getImageUrl = (imgId: string) => `/file/download/${imgId}`
 
