@@ -21,6 +21,7 @@
                         </div>
                     </template>
                 </Card>
+                <Button severity="info" class="w-full" @click="downloadProjectData">Скачать данные проекта</Button>
                 <Button severity="danger" class="w-full" @click="deleteProject">Удалить проект</Button>
             </div>
             <Card class="w-1/2 h-fit">
@@ -56,7 +57,7 @@ import { onMounted, ref } from "vue";
 import { useEditorStore } from "@/stores/editor";
 import axiosI from "@/utils/axiosInstance";
 import type { ProjectShareGetResponse, ProjectCollaboratorData, ProjectPatchRequest, ProjectPatchResponse, ProjectSharePostRequest } from "@/models/projectSchema";
-import type { ProjectDeleteError, ProjectShareGetError, ProjectSharePostError } from "@/models/errorSchema";
+import type { ErrorResponse, ProjectDeleteError, ProjectShareGetError, ProjectSharePostError } from "@/models/errorSchema";
 import { useConfirm } from "primevue/useconfirm";
 import { useRouter } from "vue-router";
 import { showAxiosErrorToast, showToast } from "@/utils/toastService";
@@ -103,6 +104,20 @@ onMounted(async () => {
 
 const deleteCollaborator = async (login: string) => {
     // TODO: delete collaborator
+}
+
+const downloadProjectData = async () => {
+    await axiosI.get(`/project/download/${editorStore.project_id}`, { responseType: 'blob' }).then((response) => {
+        const blob = new Blob([response.data], { type: 'application/zip' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'project.zip';
+        link.click();
+        link.remove();
+    }).catch((e) => {
+        showAxiosErrorToast<ErrorResponse>(e);
+    });
 }
 
 const deleteProject = async () => {
