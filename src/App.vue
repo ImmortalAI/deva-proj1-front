@@ -41,7 +41,7 @@ async function handleAuth() {
     </div>
   </header>
 
-  <div class="h-11/12">
+  <div class="grow min-h-0">
     <RouterView />
   </div>
   <Toast/>
