@@ -17,8 +17,11 @@
                 {{ editorStore.project_data?.summary_id == null ? 'Создать' : 'Пересоздать' }}
                 нейро-конспект
             </Button>
-            <ProgressSpinner v-if="editorStore.summaryInProgress"
-                style="height: 50px; margin: 0;" />
+            <div class="relative inline-flex items-center justify-center w-24 h-24" v-if="editorStore.summaryInProgress" >
+                <ProgressSpinner
+                    style="height: 50px; margin: 0;" />
+                <span class="absolute text-center text-surface-500 font-semibold text-sm">{{ Math.floor(editorStore.summaryTaskProgress) }}</span>
+            </div>
         </div>
         <div class="h-11/12">
             <MdEditor style="height: 100%;" v-model="editorStore.summaryFileContent" previewOnly

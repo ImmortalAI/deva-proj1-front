@@ -5,7 +5,12 @@
                 :disabled="editorStore.mediaFile == null || editorStore.framesExtractInProgress"
                 label="Выполнить нарезку из видео" severity="secondary"
                 @click="editorStore.createTask({ task_type: 'frames_extract', prompt: '' })" />
-            <ProgressSpinner v-if="editorStore.framesExtractInProgress" class="!w-12 !h-12 !m-0"></ProgressSpinner>
+            <div class="relative inline-flex items-center justify-center w-12 h-12"
+                v-if="editorStore.framesExtractInProgress">
+                <ProgressSpinner class="!w-12 !h-12 !m-0" />
+                <span class="absolute text-center text-surface-500 font-semibold text-sm">{{
+                    Math.floor(editorStore.framesExtractTaskProgress) }}</span>
+            </div>
             <Button label="Загрузить изображение" severity="secondary" />
         </div>
         <div class="flex items-center w-full">

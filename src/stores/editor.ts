@@ -167,6 +167,14 @@ export const useEditorStore = defineStore("editor", () => {
     return (transcribeTaskData.value?.status ?? 0) * 100;
   });
 
+  const summaryTaskProgress = computed(() => {
+    return (summaryEditTaskData.value?.status ?? summaryTaskData.value?.status ?? 0) * 100;
+  });
+
+  const framesExtractTaskProgress = computed(() => {
+    return (framesExtractTaskData.value?.status ?? 0) * 100;
+  });
+
   const tasks = {
     transcribe: ref<TaskData | null>(null),
     summary: ref<TaskData | null>(null),
@@ -316,6 +324,8 @@ export const useEditorStore = defineStore("editor", () => {
     summaryInProgress,
     framesExtractInProgress,
     transcribeTaskProgress,
+    summaryTaskProgress,
+    framesExtractTaskProgress,
     newWSMessage,
     notes,
     summaryFileContent,
