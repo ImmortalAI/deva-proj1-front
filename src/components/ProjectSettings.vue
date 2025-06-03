@@ -21,7 +21,7 @@
                         </div>
                     </template>
                 </Card>
-                <Button severity="info" class="w-full" @click="downloadProjectData">Скачать данные проекта</Button>
+                <Button severity="info" class="w-full" @click="downloadProjectData" :disabled="isDownloadingFiles">Скачать данные проекта</Button>
                 <Button severity="danger" class="w-full" @click="deleteProject">Удалить проект</Button>
             </div>
             <Card class="w-1/2 h-fit">
@@ -106,7 +106,9 @@ const deleteCollaborator = async (login: string) => {
     // TODO: delete collaborator
 }
 
+const isDownloadingFiles = ref(false);
 const downloadProjectData = async () => {
+    isDownloadingFiles.value = true;
     await axiosI.get(`/project/download/${editorStore.project_id}`, { responseType: 'blob' }).then((response) => {
         const blob = new Blob([response.data], { type: 'application/zip' });
         const url = window.URL.createObjectURL(blob);
@@ -115,8 +117,10 @@ const downloadProjectData = async () => {
         link.download = 'project.zip';
         link.click();
         link.remove();
+        isDownloadingFiles.value = false;
     }).catch((e) => {
         showAxiosErrorToast<ErrorResponse>(e);
+        isDownloadingFiles.value = false;
     });
 }
 
