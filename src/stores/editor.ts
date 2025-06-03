@@ -134,7 +134,6 @@ export const useEditorStore = defineStore("editor", () => {
     if (parsedValue.message_type === "connection") return;
     // Process message about task status and its completion
     if (parsedValue.message_type === "task_status") {
-      console.log("UPDATING TASK STATUS");
       const taskDataWS = parsedValue.data as WSTaskStatus;
       // SMALL TASKS
       if (transcribeTaskData.value?.id === taskDataWS.id)
@@ -146,19 +145,21 @@ export const useEditorStore = defineStore("editor", () => {
       if (summaryEditTaskData.value?.id === taskDataWS.id)
         summaryEditTaskData.value = taskDataWS;
     } else if (parsedValue.message_type === "task_done") {
-      console.log("TASK DONE!!!!!!!!!");
       const taskDataWS = parsedValue.data as WSTaskStatus;
       // BIG TASK
-      if (taskDataWS.id === bigTaskId.value && taskDataWS.done) return;
+      if (taskDataWS.id === bigTaskId.value && taskDataWS.done) {
+        bigTaskId.value = "";
+        subtaskCount.value = 0;
+      }
       // SMALL TASKS
       if (transcribeTaskData.value?.id === taskDataWS.id)
-        transcribeTaskData.value = taskDataWS;
+        transcribeTaskData.value = null;
       if (summaryTaskData.value?.id === taskDataWS.id)
-        summaryTaskData.value = taskDataWS;
+        summaryTaskData.value = null;
       if (framesExtractTaskData.value?.id === taskDataWS.id)
-        framesExtractTaskData.value = taskDataWS;
+        framesExtractTaskData.value = null;
       if (summaryEditTaskData.value?.id === taskDataWS.id)
-        summaryEditTaskData.value = taskDataWS;
+        summaryEditTaskData.value = null;
       await loadProjectData();
     }
   });
