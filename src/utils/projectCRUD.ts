@@ -141,7 +141,7 @@ export async function updateNote(id: string, data: NoteUpdateRequest) {
 
 export async function createNote(data: NoteCreateRequest) {
   try {
-    await axiosI.post(`/note`, data);
+    await axiosI.post(`/note/${data.file_id}`, data);
   } catch (e) {
     showAxiosErrorToast<ErrorResponse>(e);
   }
